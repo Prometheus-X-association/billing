@@ -13,6 +13,25 @@ The Billing of Prometheus-X uses Stripe and Stripe Connect to provide a strong s
 * Promotes a Culture of Giving Back
 * Simplified integration 
 ### Technical usage scenarios
+* Allow individuals to view all transactions on their account and gain a clear understanding of the payment process.
+* Enable individuals to provide and customize invoices
+* Facilitate the integration of a payment platform
+* Reduce costs for the BB instantiator.
+* Offer comprehensive documentation.
+
+### Requirements
+* MUST ensure all transactions are logged and auditable.
+* SHOULD allow customization for diverse data spaces and participant requirements.
+* SHOULD eliminate the need for hefty licensing fees.
+* MUST ensure the billing component adapts quickly to industry changes.
+* SHOULD enable seamless interactions between different entities in the ecosystem.
+* MUST combine robust security measures with user-managed customizations.
+* SHOULD allow businesses to manage costs efficiently.
+* SHOULD help establish industry-wide billing standards.
+* MUST encourage collaborative problem-solving and innovation.
+* MUST facilitate easy integration with user-friendly APIs and comprehensive documentation.
+* MUST read the contract and trigger the right payment with the right prices
+### Benefits
 * Stripe and Stripe Connect provide detailed transaction logs and dashboards, ensuring transparency in the billing process.
 * Stripe’s extensive APIs and webhooks allow businesses to tailor the payment experience to their specific needs, catering to diverse data spaces and participant requirements.
 * Stripe’s accessible pricing model eliminates the need for hefty licensing fees, making it easier for new participants to join the ecosystem and fostering growth and diversity.
@@ -23,17 +42,6 @@ The Billing of Prometheus-X uses Stripe and Stripe Connect to provide a strong s
 * Using Stripe can help establish industry-wide standards for billing, simplifying transactions and reducing disputes.
 * Stripe’s community support and resources encourage collaborative problem-solving and innovation, benefiting the broader ecosystem.
 * Stripe’s user-friendly API and comprehensive documentation facilitate easy integration, enabling organizations using Prometheus-X components to quickly add billing for their clients.
-### Requirements
-* MUST ensure all transactions are logged and auditable.
-* SHOULD allow customization for diverse data spaces and participant requirements.
-* MUST eliminate the need for hefty licensing fees.
-* MUST ensure the billing component adapts quickly to industry changes.
-* SHOULD enable seamless interactions between different entities in the ecosystem.
-* MUST combine robust security measures with user-managed customizations.
-* SHOULD allow businesses to manage costs efficiently.
-* SHOULD help establish industry-wide billing standards.
-* MUST encourage collaborative problem-solving and innovation.
-* MUST facilitate easy integration with user-friendly APIs and comprehensive documentation.
 ## Integrations
 ### Direct Integrations with Other BBs
 * Consent via axios call.
@@ -42,38 +50,7 @@ The Billing of Prometheus-X uses Stripe and Stripe Connect to provide a strong s
 * Catalog frontend (optional) via Stripe npm package.
 ### Integrations via Connector
 The connector will integrate the Billing to allow payment throughout the exchanges via axios call.
-### Integrations via Dispatcher
-To facilitate the integrations of the billing, the development of a new component within the PTX architecture can be made, a message dispatcher that rests on a Message broker (like rabbitMQ) and logics/configurations of message duplications..
-This component makes it possible to centralize messages and events in all BBs to avoid tedious integration in each of them.
-#### Architecture example
-<p align="center"><img src="../_pics/dispatcher_1.png" alt="Dispatcher architecture" width="500"></p>
 
-#### Dynamic Behaviour example
-```mermaid
-sequenceDiagram
-    participant User
-    participant Catalog
-    participant DispatcherQueue
-    participant DispatcherLogic
-    participant Consent
-    participant Contract
-    participant Billing
-
-    User->>Catalog: SignUp
-    Catalog->>DispatcherQueue: Publish message on queue
-    DispatcherLogic-->>DispatcherQueue: Listen to message
-    DispatcherLogic-->>DispatcherLogic: Find logics of message duplication in config file
-    DispatcherLogic->>DispatcherQueue: Publish on N queue
-
-    Consent-->>DispatcherQueue: Listen to message
-    Consent-->>Consent: Do logic on message consumption
-
-    Contract-->>DispatcherQueue: Listen to message
-    Contract-->>Contract: Do logic on message consumption
-
-    Billing-->>DispatcherQueue: Listen to message
-    Billing-->>Billing: Do logic on message consumption
-```
 ### Frontend Integration
 Stripe provide easy to use [embedded components](https://docs.stripe.com/connect/supported-embedded-components).
 ## Relevant Standards
@@ -249,109 +226,11 @@ Stripe provide easy to use [embedded components](https://docs.stripe.com/connect
   "type": "none"
 }
 ```
-### Product creation on Data resource creation example
-#### Input
-```json
-{
-  "aggregationOf": [],
-  "name": "Diplomas",
-  "description": "Diplomas data",
-  "copyrightOwnedBy": [
-    "668d304536f5f18a25d99847"
-  ],
-  "license": [],
-  "policy": [
-    {
-      "@context": {
-        "xsd": "http://www.w3.org/2001/XMLSchema#",
-        "description": {
-          "@id": "https://schema.org/description",
-          "@container": "@language"
-        }
-      },
-      "@id": "http://localhost:3000/static/references/rules/rule-access-1.json",
-      "title": {
-        "@type": "xsd/string",
-        "@value": "No Restriction"
-      },
-      "uid": "rule-access-1",
-      "name": "No Restriction",
-      "description": [
-        {
-          "@value": "CAN use data without any restrictions",
-          "@language": "en"
-        }
-      ],
-      "policy": {
-        "permission": [
-          {
-            "action": "use",
-            "target": "@{target}",
-            "constraint": []
-          }
-        ]
-      },
-      "requestedFields": [
-        "target"
-      ]
-    }
-  ],
-  "producedBy": "668d304536f5f18a25d99847",
-  "obsoleteDateTime": "",
-  "expirationDateTime": "",
-  "exposedThrough": [],
-  "containsPII": false,
-  "isPayloadForAPI": false,
-  "anonymized_extract": "",
-  "attributes": [],
-  "category": "5f8ed518651f1648e0d8162a",
-  "country_or_region": "World",
-  "entries": -1,
-  "subCategories": [],
-  "type": "",
-  "url": "",
-  "credential": "",
-  "method": "none",
-  "payloadType": "",
-  "payloadUrl": "",
-  "payloadCredential": "",
-  "payloadMethod": "none",
-  "b2cDescription": [
-    {
-      "@language": "",
-      "@value": ""
-    }
-  ]
-}
-```
-#### Output
-```json
-{
-  "id": "prod_NWjs8kKbJWmuuc",
-  "object": "product",
-  "active": true,
-  "created": 1678833149,
-  "default_price": null,
-  "description": null,
-  "images": [],
-  "features": [],
-  "livemode": false,
-  "metadata": {},
-  "name": "Diplomas",
-  "package_dimensions": null,
-  "shippable": null,
-  "statement_descriptor": null,
-  "tax_code": null,
-  "unit_label": null,
-  "updated": 1678833149,
-  "url": null
-}
-```
 ### Customer creation on Contract signature example
 #### Input
 ```json
 {
-  "signature": "hasSigned"
+  "signature": "08EUcchSOQKhuA/hU5cL1BEiQe/UGk0vsL7NfabiHWB/meRLYYWNSHXtx6H2HGBG"
 }
 ```
 #### Output
@@ -405,7 +284,7 @@ The Stripe API allow to create for each connected accounts: subscriptions, produ
 #### Connected Account
 1. Create a Connected Account
    - Endpoint: POST /v1/accounts
-   - Purpose: To create a new connected account under your platform.
+   - Purpose: To create a new connected account.
 2. Update a Connected Account
    - Endpoint: POST /v1/accounts/{account_id}
    - Purpose: To update details of a connected account.
@@ -414,7 +293,7 @@ The Stripe API allow to create for each connected accounts: subscriptions, produ
    - Purpose: To fetch details of a connected account.
 4. Delete a Connected Account
    - Endpoint: DELETE /v1/accounts/{account_id}
-   - Purpose: To delete a connected account from your platform.
+   - Purpose: To delete a connected account from.
 #### Customers
 1. Create a Customer for a Connected Account
    - Endpoint: POST /v1/customers
@@ -539,45 +418,34 @@ Each participant can be a customer in each connected account, so it is necessary
     sequenceDiagram
     participant User
     participant Catalog
-    participant Dispatcher
     participant Billing
     participant Stripe
     
     User->>Catalog: Signup
-        alt Axios
-            Catalog->>Billing: Http requests
-            Billing->>Stripe: Create connected Account
-            Stripe-->>Billing: Response
-            Billing-->>Billing: Store connected Account id
-        else Dispatcher
-            Catalog->>Dispatcher: Publish in queue
-            Dispatcher->>Dispatcher: Dispatch in queues
-            Billing-->>Dispatcher: Listen to queue
-            Billing->>Stripe: Create connected Account
-            Stripe-->>Billing: Response
-            Billing-->>Billing: Store connected Account id
-        end
+    Catalog->>Billing: Http requests
+    Billing->>Stripe: Create connected Account
+    Stripe-->>Billing: Response
+    Billing-->>Billing: Store connected Account id
 ```
 
-### Data resource creation example
+### Exchanges and payment trigger example
 
 ```mermaid
     sequenceDiagram
-    participant User
-    participant Catalog
-    participant Dispatcher
+    participant Provider Connector
+    participant Consumer Connector
+    participant Contract
     participant Billing
     participant Stripe
 
-    User->>Catalog: Create dataResource
-    alt Axios
-        Catalog->>Billing: Http requests
-        Billing->>Stripe: Create Products or subscriptions
-    else Dispatcher
-        Catalog->>Dispatcher: Publish in queue
-        Dispatcher->>Dispatcher: Dispatch in queues
-        Billing-->>Dispatcher: Listen to queue
-        Billing->>Stripe: Create Products or subscriptions
+    Note over Provider Connector,Consumer Connector: successfully exchanges
+    Provider Connector->>Contract: Exchange process successfully
+    Consumer Connector->>Contract: Exchange process successfully
+    Contract->>Billing: Trigger payment
+    loop
+        Billing->>Stripe: Payment_intent
+        Stripe-->>Billing: Response
+        Billing-->>Billing: Store payment
     end
 ```
 
@@ -587,22 +455,18 @@ Each participant can be a customer in each connected account, so it is necessary
 sequenceDiagram
 participant User
 participant Contract
-participant Dispatcher
 participant Billing
 participant Stripe
 
     User->>Contract: Sign contract
-    alt Axios
-        Contract->>Billing: Http requests
-        Billing->>Stripe: Create customers for connected accounts
+    Contract->>Billing: Http requests
+    Billing->>Stripe: Create customers for connected accounts
+    Stripe-->>Billing: Response
+    Billing-->>Billing: Store in database customer id
+    loop
+        Billing->>Stripe: Create product
         Stripe-->>Billing: Response
-        Billing-->>Billing: Store in database customer id
-    else Dispatcher
-        Contract->>Dispatcher: Publish in queue
-        Dispatcher->>Dispatcher: Dispatch in queues
-        Billing-->>Dispatcher: Listen to queue
-        Billing->>Stripe: Create customers for connected accounts
-        Billing-->>Billing: Store in database customer id
+        Billing-->>Billing: Store product
     end
 ```
 
