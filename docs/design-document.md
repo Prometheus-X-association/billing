@@ -44,13 +44,10 @@ The Billing of Prometheus-X uses Stripe and Stripe Connect to provide a strong s
 * Stripe’s user-friendly API and comprehensive documentation facilitate easy integration, enabling organizations using Prometheus-X components to quickly add billing for their clients.
 ## Integrations
 ### Direct Integrations with Other BBs
-* Consent via axios call.
-* Contract via axios call.
-* Catalog via axios call.
-* Catalog frontend (optional) via Stripe npm package.
-### Integrations via Connector
-The connector will integrate the Billing to allow payment throughout the exchanges via axios call.
-
+* Consent
+* Contract
+* Catalog
+* Connector
 ### Frontend Integration
 Stripe provide easy to use [embedded components](https://docs.stripe.com/connect/supported-embedded-components).
 ## Relevant Standards
@@ -62,7 +59,6 @@ Stripe provide easy to use [embedded components](https://docs.stripe.com/connect
 {
   "firstName": "Doe",
   "lastName": "John",
-  "password": "Qk?4@]$zgqQyXkc",
   "email": "john@doe.com",
   "organizationName": "John Doe Organisation",
   "createdOnInstance": "VisionsTrust"
@@ -294,6 +290,9 @@ The Stripe API allow to create for each connected accounts: subscriptions, produ
 4. Delete a Connected Account
    - Endpoint: DELETE /v1/accounts/{account_id}
    - Purpose: To delete a connected account from.
+5. Create a login link
+   - Endpoint: POST /v1/accounts/{account_id}/login_links
+   - Purpose: To give access to the express Dashboard
 #### Customers
 1. Create a Customer for a Connected Account
    - Endpoint: POST /v1/customers
@@ -407,6 +406,30 @@ The Stripe API allow to create for each connected accounts: subscriptions, produ
 1. Webhooks
     - Endpoint: POST /v1/webhooks
     - Purpose: to catch stripe webhooks.
+#### File
+1. Create a file
+   - Endpoint: POST /v1/files
+   - Purpose: upload a file to stripe
+#### Setup intent
+1. Create a setup intent
+   - Endpoint: POST /v1/setupintent/
+   - Purpose: 
+2. Update a setup intent
+   - Endpoint: PUT /v1/setupintent/{setupIntentId}
+   - Purpose: 
+3. Retrieve a setup intent
+   - Endpoint: GET /v1/setupintent/{setupIntentId}
+   - Purpose: 
+4. cancel a setup intent
+   - Endpoint: DELETE /v1/setupintent/{setupIntentId}
+   - Purpose: 
+5. confirm a setup intent
+   - Endpoint: POST /v1/setupintent/{setupIntentId}
+   - Purpose: 
+#### Refund
+#### Balance
+#### Tax Rate
+
 ### Models
 Each participant can be a customer in each connected account, so it is necessary to know where they are a customer and what subscriptions they have. It is also good to know the products in a connected account.
 <p align="center"><img src="../_pics/mpd.png" alt="Architecture" width="700"></p>
@@ -518,53 +541,44 @@ Example for a customer.
 
 A price to use a service can be represented as an ODRL rule, specifically as a 'duty' within a 'permission' statement. This duty could include an 'action' of type 'compensate' with a 'refinement' that specifies the exact payment amount and currency. For example, a price of 5 euros could be represented as a duty with a 'compensate' action, where the 'payAmount' is set to 5.00 and the unit is specified as Euro.
 
-Standard Odrl Example:
+Odrl Example enhanced by pricingType and paymentMethod GoodRelations properties:
 
 ```json
 {
-  "@context": "http://www.w3.org/ns/odrl.jsonld",
-  "@type": "Offer",
-  "uid": "http://example.com/policy:88",
-  "profile": "http://example.com/odrl:profile:09",
-  "permission": [
-    {
+   "@context": [
+      "http://www.w3.org/ns/odrl.jsonld",
+      {
+         "gr":"http://purl.org/goodrelations/"
+      }
+   ],
+   "@type": "Offer",
+   "uid": "http://example.com/policy:88",
+   "profile": "http://example.com/odrl:profile:09",
+   "permission": [{
       "assigner": "http://example.com/assigner:sony",
       "target": "http://example.com/music/1999.mp3",
       "action": "play",
-      "duty": [
-        {
-          "action": [
-            {
-              "rdf:value": {
-                "@id": "odrl:compensate"
-              },
-              "refinement": [
-                {
-                  "leftOperand": "payAmount",
-                  "operator": "eq",
-                  "rightOperand": {
-                    "@value": "5.00",
-                    "@type": "xsd:decimal"
-                  },
-                  "unit": "http://dbpedia.org/resource/Euro"
-                }
-              ]
-            }
-          ],
-          "constraint": [
-            {
-              "leftOperand": "event",
-              "operator": "lt",
-              "rightOperand": {
-                "@id": "odrl:policyUsage"
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ]
+      "duty": [{
+         "action": [{
+            "value": "compensate",
+            "refinement": [{
+               "leftOperand": "payAmount",
+               "operator": "eq",
+               "rightOperand": "5.00",
+               "unit": "http://dbpedia.org/resource/Euro",
+               "gr:priceType": "PerUnit",
+               "gr:PaymentMethod": "gr:DirectDebit",
+            }]
+         }],
+         "constraint": [{
+            "leftOperand": "event",
+            "operator": "lt",
+            "rightOperand": "policyUsage"
+         }]
+      }]
+   }]
 }
+
 ```
 
 The pricing verification process should occur before any data exchange, within the connector. The connector should be able to query the billing component, which would provide metadata about current billing agreements between services. These metadata could be represented as a kind of dynamic contract (did + bdd, VC ou web:did + json ?) specifically for billing purposes.
@@ -633,72 +647,68 @@ First Consequence: If unpaid, require 200 PTX Credits.
 Second Consequence: If still unpaid, verify current subscription.
 
 This structure allows flexible rights management for multiple payment options and a subscription fallback.
+ODRL example from PTX ODRL Manager consequences test case:
+
 
 ```json
 {
-  "@context": "http://www.w3.org/ns/odrl.jsonld",
-  "@type": "Agreement",
-  "permission": [
-    {
-      "target": "http://example.com/asset:66",
-      "action": "use",
-      "duty": [
-        {
-          "uid": "duty:1",
-          "action": "compensate",
-          "constraint": [
+   '@context': 'http://www.w3.org/ns/odrl.jsonld',
+   '@type': 'Agreement',
+   permission: [
+      {
+         target: 'http://example.com/asset:66',
+         action: 'use',
+         duty: [
             {
-              "leftOperand": "payAmount",
-              "operator": "eq",
-              "rightOperand": "100.00",
-              "unit": "EUR"
-            }
-          ],
-          "consequence": [
-            {
-              "action": "compensate",
-              "duty": [
-                {
-                  "action": "compensate",
-                  "constraint": [
-                    {
-                      "leftOperand": "payAmount",
-                      "operator": "eq",
-                      "rightOperand": "200.00",
-                      "unit": "PTX Credit"
-                    }
-                  ],
-                  "consequence": [
-                    {
-                      "action": "verify",
-                      "duty": [
+               action: 'compensate',
+               constraint: [
+                  {
+                     uid: 'constraint:1',
+                     leftOperand: 'payAmount',
+                     operator: 'eq',
+                     rightOperand: 100,
+                     unit: 'EUR',
+                  },
+               ],
+               consequence: [
+                  {
+                     action: 'compensate',
+                     constraint: [
                         {
-                          "action": "hasValidSubscription",
-                          "constraint": [
-                            {
-                              "leftOperand": "dateTime",
-                              "operator": "lteq",
-                              "rightOperand": "{{ current_date }}"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
+                           uid: 'constraint:2',
+                           leftOperand: 'payAmount',
+                           operator: 'eq',
+                           rightOperand: 200,
+                           unit: 'PTX Credit',
+                        },
+                     ],
+                     consequence: [
+                        {
+                           // Custom Action
+                           action: 'verifySubscription',
+                           constraint: [
+                              {
+                                 uid: 'constraint:3',
+                                 leftOperand: 'dateTime',
+                                 operator: 'lteq',
+                                 rightOperand: creationDate.toISOString(),
+                              },
+                           ],
+                        },
+                     ],
+                  },
+               ],
+            },
+         ],
+      },
+   ],
+};
 ```
 
 Define how and where the “credit information” or “subscription database” will be hosted.
 Do the payment models cover all use cases and requirements for resource access, for example should test pass-type credit models also be available/useful ?
 
+### Exchanges and payment process
 
 ## Configuration and deployment settings
 
