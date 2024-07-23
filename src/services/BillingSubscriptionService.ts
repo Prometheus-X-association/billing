@@ -1,3 +1,5 @@
+type SubscriptionType = 'subscriptionDateTime' | 'payAmount' | 'usageCount';
+
 interface SubscriptionDetail {
   subscriptionDateTime?: Date;
   payAmount?: number;
@@ -5,34 +7,57 @@ interface SubscriptionDetail {
 }
 
 interface Subscription {
-  participantId: string;
-  subscriptionType: 'subscriptionDateTime' | 'payAmount' | 'usageCount';
   isActive: boolean;
+  participantId: string;
+  subscriptionType: SubscriptionType;
+  resourceId?: string;
+  resourceIds?: string[];
   details: SubscriptionDetail;
 }
 
 class BillingSubscriptionService {
   private subscriptions: Subscription[] = [
     {
+      isActive: true,
       participantId: 'participant1',
       subscriptionType: 'subscriptionDateTime',
-      isActive: true,
+      resourceId: 'resource1',
       details: {
         subscriptionDateTime: new Date('2024-12-31'),
       },
     },
     {
+      isActive: true,
+      participantId: 'participant1',
+      subscriptionType: 'usageCount',
+      resourceIds: ['resource2', 'resource3'],
+      details: {
+        usageCount: 10,
+      },
+    },
+    {
+      isActive: false,
       participantId: 'participant2',
       subscriptionType: 'payAmount',
-      isActive: false,
+      resourceId: 'resource4',
       details: {
         payAmount: 50,
       },
     },
     {
+      isActive: true,
+      participantId: 'participant2',
+      subscriptionType: 'payAmount',
+      resourceIds: ['resource5', 'resource6'],
+      details: {
+        payAmount: 100,
+      },
+    },
+    {
+      isActive: true,
       participantId: 'participant3',
       subscriptionType: 'usageCount',
-      isActive: true,
+      resourceId: 'resource6',
       details: {
         usageCount: 5,
       },
@@ -45,38 +70,78 @@ class BillingSubscriptionService {
     );
   }
 
-  getSubscriptionDateTime(participantId: string): Date | null {
-    const subscription = this.subscriptions.find(
-      (sub) =>
-        sub.participantId === participantId &&
-        sub.subscriptionType === 'subscriptionDateTime',
+  getResourceSubscription(
+    participantId: string,
+    resourceId: string,
+  ): Subscription | null {
+    return (
+      this.subscriptions.find(
+        (sub) =>
+          sub.participantId === participantId &&
+          (sub.resourceId === resourceId ||
+            (sub.resourceIds && sub.resourceIds.includes(resourceId))),
+      ) || null
     );
-    return subscription
+  }
+
+  getGroupSubscription(
+    participantId: string,
+    resourceId: string,
+  ): Subscription | null {
+    return (
+      this.subscriptions.find(
+        (sub) =>
+          sub.participantId === participantId &&
+          sub.resourceIds &&
+          sub.resourceIds.includes(resourceId),
+      ) || null
+    );
+  }
+
+  getSubscriptionDateTime(
+    participantId: string,
+    resourceId: string,
+  ): Date | null {
+    const subscription = this.getResourceSubscription(
+      participantId,
+      resourceId,
+    );
+    return subscription &&
+      subscription.subscriptionType === 'subscriptionDateTime'
       ? (subscription.details.subscriptionDateTime ?? null)
       : null;
   }
 
-  getSubscriptionPayAmount(participantId: string): number | null {
-    const subscription = this.subscriptions.find(
-      (sub) =>
-        sub.participantId === participantId &&
-        sub.subscriptionType === 'payAmount',
+  getSubscriptionPayAmount(
+    participantId: string,
+    resourceId: string,
+  ): number | null {
+    const subscription = this.getResourceSubscription(
+      participantId,
+      resourceId,
     );
-    return subscription ? (subscription.details.payAmount ?? null) : null;
+    return subscription && subscription.subscriptionType === 'payAmount'
+      ? (subscription.details.payAmount ?? null)
+      : null;
   }
 
-  getSubscriptionUsageCount(participantId: string): number | null {
-    const subscription = this.subscriptions.find(
-      (sub) =>
-        sub.participantId === participantId &&
-        sub.subscriptionType === 'usageCount',
+  getSubscriptionUsageCount(
+    participantId: string,
+    resourceId: string,
+  ): number | null {
+    const subscription = this.getResourceSubscription(
+      participantId,
+      resourceId,
     );
-    return subscription ? (subscription.details.usageCount ?? null) : null;
+    return subscription && subscription.subscriptionType === 'usageCount'
+      ? (subscription.details.usageCount ?? null)
+      : null;
   }
 
-  isSubscriptionActive(participantId: string): boolean {
-    const subscription = this.subscriptions.find(
-      (sub) => sub.participantId === participantId,
+  isSubscriptionActive(participantId: string, resourceId: string): boolean {
+    const subscription = this.getResourceSubscription(
+      participantId,
+      resourceId,
     );
     return subscription ? subscription.isActive : false;
   }
