@@ -6,7 +6,8 @@ interface SubscriptionDetail {
   usageCount?: number;
 }
 
-interface Subscription {
+export interface Subscription {
+  _id: string;
   isActive: boolean;
   participantId: string;
   subscriptionType: SubscriptionType;
@@ -16,61 +17,29 @@ interface Subscription {
 }
 
 class BillingSubscriptionService {
-  private subscriptions: Subscription[] = [
-    {
-      isActive: true,
-      participantId: 'participant1',
-      subscriptionType: 'subscriptionDateTime',
-      resourceId: 'resource1',
-      details: {
-        subscriptionDateTime: new Date('2024-12-31'),
-      },
-    },
-    {
-      isActive: true,
-      participantId: 'participant1',
-      subscriptionType: 'usageCount',
-      resourceIds: ['resource2', 'resource3'],
-      details: {
-        usageCount: 10,
-      },
-    },
-    {
-      isActive: false,
-      participantId: 'participant2',
-      subscriptionType: 'payAmount',
-      resourceId: 'resource4',
-      details: {
-        payAmount: 50,
-      },
-    },
-    {
-      isActive: true,
-      participantId: 'participant2',
-      subscriptionType: 'payAmount',
-      resourceIds: ['resource5', 'resource6'],
-      details: {
-        payAmount: 100,
-      },
-    },
-    {
-      isActive: true,
-      participantId: 'participant3',
-      subscriptionType: 'usageCount',
-      resourceId: 'resource6',
-      details: {
-        usageCount: 5,
-      },
-    },
-  ];
+  private subscriptions: Subscription[] = [];
 
-  getParticipantSubscriptions(participantId: string): Subscription[] {
+  public addSubscription(subscriptions: Subscription[] | Subscription) {
+    if (Array.isArray(subscriptions)) {
+      this.subscriptions.push(...subscriptions);
+    } else {
+      this.subscriptions.push(subscriptions);
+    }
+  }
+
+  public removeSubscriptionById(subscriptionId: string): void {
+    this.subscriptions = this.subscriptions.filter(
+      (sub) => sub._id !== subscriptionId,
+    );
+  }
+
+  public getParticipantSubscriptions(participantId: string): Subscription[] {
     return this.subscriptions.filter(
       (sub) => sub.participantId === participantId,
     );
   }
 
-  getResourceSubscription(
+  public getResourceSubscription(
     participantId: string,
     resourceId: string,
   ): Subscription | null {
@@ -84,7 +53,7 @@ class BillingSubscriptionService {
     );
   }
 
-  getGroupSubscription(
+  public getGroupSubscription(
     participantId: string,
     resourceId: string,
   ): Subscription | null {
@@ -98,7 +67,7 @@ class BillingSubscriptionService {
     );
   }
 
-  getSubscriptionDateTime(
+  public getSubscriptionDateTime(
     participantId: string,
     resourceId: string,
   ): Date | null {
@@ -112,7 +81,7 @@ class BillingSubscriptionService {
       : null;
   }
 
-  getSubscriptionPayAmount(
+  public getSubscriptionPayAmount(
     participantId: string,
     resourceId: string,
   ): number | null {
@@ -125,7 +94,7 @@ class BillingSubscriptionService {
       : null;
   }
 
-  getSubscriptionUsageCount(
+  public getSubscriptionUsageCount(
     participantId: string,
     resourceId: string,
   ): number | null {
@@ -138,7 +107,10 @@ class BillingSubscriptionService {
       : null;
   }
 
-  isSubscriptionActive(participantId: string, resourceId: string): boolean {
+  public isSubscriptionActive(
+    participantId: string,
+    resourceId: string,
+  ): boolean {
     const subscription = this.getResourceSubscription(
       participantId,
       resourceId,

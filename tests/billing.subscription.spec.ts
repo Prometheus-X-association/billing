@@ -6,6 +6,58 @@ describe('BillingSubscriptionService', () => {
 
   beforeEach(() => {
     billingService = new BillingSubscriptionService();
+    billingService.addSubscription([
+      {
+        _id: '_id_1',
+        isActive: true,
+        participantId: 'participant1',
+        subscriptionType: 'subscriptionDateTime',
+        resourceId: 'resource1',
+        details: {
+          subscriptionDateTime: new Date('2024-12-31'),
+        },
+      },
+      {
+        _id: '_id_2',
+        isActive: true,
+        participantId: 'participant1',
+        subscriptionType: 'usageCount',
+        resourceIds: ['resource2', 'resource3'],
+        details: {
+          usageCount: 10,
+        },
+      },
+      {
+        _id: '_id_3',
+        isActive: false,
+        participantId: 'participant2',
+        subscriptionType: 'payAmount',
+        resourceId: 'resource4',
+        details: {
+          payAmount: 50,
+        },
+      },
+      {
+        _id: '_id_4',
+        isActive: true,
+        participantId: 'participant2',
+        subscriptionType: 'payAmount',
+        resourceIds: ['resource5', 'resource6'],
+        details: {
+          payAmount: 100,
+        },
+      },
+      {
+        _id: '_id_5',
+        isActive: true,
+        participantId: 'participant3',
+        subscriptionType: 'usageCount',
+        resourceId: 'resource6',
+        details: {
+          usageCount: 5,
+        },
+      },
+    ]);
   });
 
   describe('getParticipantSubscriptions', () => {
@@ -13,6 +65,7 @@ describe('BillingSubscriptionService', () => {
       const result = billingService.getParticipantSubscriptions('participant1');
       expect(result).to.deep.equal([
         {
+          _id: '_id_1',
           participantId: 'participant1',
           subscriptionType: 'subscriptionDateTime',
           isActive: true,
@@ -22,6 +75,7 @@ describe('BillingSubscriptionService', () => {
           },
         },
         {
+          _id: '_id_2',
           participantId: 'participant1',
           subscriptionType: 'usageCount',
           isActive: true,
@@ -46,6 +100,7 @@ describe('BillingSubscriptionService', () => {
         'resource1',
       );
       expect(result).to.deep.equal({
+        _id: '_id_1',
         participantId: 'participant1',
         subscriptionType: 'subscriptionDateTime',
         isActive: true,
@@ -72,6 +127,7 @@ describe('BillingSubscriptionService', () => {
         'resource2',
       );
       expect(result).to.deep.equal({
+        _id: '_id_2',
         participantId: 'participant1',
         subscriptionType: 'usageCount',
         isActive: true,
