@@ -15,11 +15,14 @@ interface Subscription extends Document {
   details: SubscriptionDetail;
 }
 
-const SubscriptionDetailSchema = new Schema({
-  subscriptionDateTime: { type: Date },
-  payAmount: { type: Number },
-  usageCount: { type: Number },
-});
+const SubscriptionDetailSchema = new Schema(
+  {
+    subscriptionDateTime: { type: Date },
+    payAmount: { type: Number },
+    usageCount: { type: Number },
+  },
+  { _id: false },
+);
 
 const SubscriptionSchema = new Schema({
   isActive: { type: Boolean, required: true },

@@ -117,6 +117,10 @@ class BillingSubscriptionService {
     );
     return subscription ? subscription.isActive : false;
   }
+
+  public getAllSubscriptions(): Subscription[] {
+    return this.subscriptions;
+  }
 }
 
 export default BillingSubscriptionService;
