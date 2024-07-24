@@ -1,9 +1,20 @@
 import { config } from './config/environment';
-import { AppServer, startServer } from './server';
+import { getServerApp } from './server';
+import express from 'express';
+import { IncomingMessage, Server, ServerResponse } from 'http';
 
-export const main = async (options: { port?: number }): Promise<AppServer> => {
-  const { port } = options;
-  return await startServer(port);
+type AppServer = {
+  app: express.Application;
+  server: Server<typeof IncomingMessage, typeof ServerResponse>;
 };
 
-main({ port: config.port });
+export const main = async (): Promise<AppServer> => {
+  const app = await getServerApp();
+  const { port } = config;
+  const server = app.listen(port, () => {
+    console.log('Server running on: http://localhost:' + port);
+  });
+  return { app, server };
+};
+
+main();

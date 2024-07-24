@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
-import BillingSubscriptionService, {
-  Subscription,
-} from './BillingSubscriptionService';
+import BillingSubscriptionService from './BillingSubscriptionService';
 import {
   ChangeStreamInsertDocument,
   ChangeStreamDeleteDocument,
@@ -10,7 +8,7 @@ import {
 import SubscriptionModel from '../models/SubscriptionModel';
 import { config } from '../config/environment';
 
-export class BillingSubscriptionSyncService {
+class BillingSubscriptionSyncService {
   private static instance: BillingSubscriptionSyncService;
   private billingService?: BillingSubscriptionService;
 
@@ -111,3 +109,5 @@ export class BillingSubscriptionSyncService {
     }
   }
 }
+
+export default BillingSubscriptionSyncService;

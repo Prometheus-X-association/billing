@@ -17,7 +17,17 @@ export interface Subscription {
 }
 
 class BillingSubscriptionService {
+  private static instance: BillingSubscriptionService;
   private subscriptions: Subscription[] = [];
+
+  public contructor() {}
+
+  public static getService(): BillingSubscriptionService {
+    if (!BillingSubscriptionService.instance) {
+      BillingSubscriptionService.instance = new BillingSubscriptionService();
+    }
+    return BillingSubscriptionService.instance;
+  }
 
   public addSubscription(subscriptions: Subscription[] | Subscription) {
     if (Array.isArray(subscriptions)) {

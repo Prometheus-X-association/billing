@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import BillingSubscriptionService from '../src/services/BillingSubscriptionService';
+import BillingSubscriptionService from '../../src/services/BillingSubscriptionService';
 
-describe('BillingSubscriptionService', () => {
+describe('Billing Subscription Service', () => {
   let billingService: BillingSubscriptionService;
 
   beforeEach(() => {

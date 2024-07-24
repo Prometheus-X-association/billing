@@ -4,9 +4,9 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import BillingSubscriptionService, {
   Subscription,
-} from '../src/services/BillingSubscriptionService';
-import { BillingSubscriptionSyncService } from '../src/services/BillingSubscriptionSyncService';
-import SubscriptionModel from '../src/models/SubscriptionModel';
+} from '../../src/services/BillingSubscriptionService';
+import BillingSubscriptionSyncService from '../../src/services/BillingSubscriptionSyncService';
+import SubscriptionModel from '../../src/models/SubscriptionModel';
 
 describe('Subscription Sync Service', function () {
   let mongoServer: MongoMemoryServer;

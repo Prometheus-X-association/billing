@@ -7,7 +7,7 @@
     "dev": "nodemon -- --development",
     "start": "node ./dist/index.js --production",
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
-    "test": "mocha --require ts-node/register --exit ./tests/*.spec.ts"
+    "test": "mocha --require ts-node/register --exit ./tests/*.spec.ts --test"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +19,7 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.14.11",
     "@types/sinon": "^17.0.3",
+    "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
     "chai": "^4.3.10",
