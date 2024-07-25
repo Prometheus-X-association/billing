@@ -21,7 +21,8 @@ describe('Subscription Sync Service', function () {
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
     subscriptionService = new BillingSubscriptionService();
-    syncService = new BillingSubscriptionSyncService(mongoUri);
+    syncService = new BillingSubscriptionSyncService();
+    await syncService.connect(mongoUri);
     syncService.setBillingService(subscriptionService);
   });
 
@@ -71,7 +72,6 @@ describe('Subscription Sync Service', function () {
     await syncService.loadSubscriptions();
 
     const loadedSubscriptions = subscriptionService.getAllSubscriptions();
-
     expect(loadedSubscriptions).to.have.lengthOf(2);
 
     const isValidDate = (date: any) =>

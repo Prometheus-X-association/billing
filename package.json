@@ -7,7 +7,7 @@
     "dev": "nodemon -- --development",
     "start": "node ./dist/index.js --production",
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
-    "test": "mocha --require ts-node/register --exit ./tests/*.spec.ts --test"
+    "test": "mocha --require ts-node/register --exit ./tests/**/*.spec.ts --test"
   },
   "keywords": [],
   "author": "",

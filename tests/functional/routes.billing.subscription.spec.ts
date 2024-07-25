@@ -5,6 +5,7 @@ import { getServerApp } from '../../src/server';
 import http from 'http';
 import { _logYellow, _logGreen, _logObject } from '../utils/utils';
 import BillingSubscriptionService from '../../src/services/BillingSubscriptionService';
+import BillingSubscriptionSyncService from '../../src/services/BillingSubscriptionSyncService';
 
 const billingSubscriptionService = BillingSubscriptionService.getService();
 
@@ -60,7 +61,9 @@ describe('Billing Subscription via API', () => {
     });
   });
 
-  after(() => {
+  after(async () => {
+    // Ensure to disconnect BillingSubscriptionSyncService started by the server
+    (await BillingSubscriptionSyncService.getService()).disconnect();
     server.close();
   });
 
