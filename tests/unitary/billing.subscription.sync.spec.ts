@@ -2,13 +2,16 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import BillingSubscriptionService, {
-  Subscription,
-} from '../../src/services/BillingSubscriptionService';
+import BillingSubscriptionService from '../../src/services/BillingSubscriptionService';
 import BillingSubscriptionSyncService from '../../src/services/BillingSubscriptionSyncService';
 import SubscriptionModel from '../../src/models/SubscriptionModel';
+import {
+  Subscription,
+  SubscriptionType,
+} from '../../src/types/billing.subscription.types';
 
 describe('Subscription Sync Service', function () {
+  const now = new Date();
   let mongoServer: MongoMemoryServer;
   let subscriptionService: BillingSubscriptionService;
   let syncService: BillingSubscriptionSyncService;
@@ -28,27 +31,39 @@ describe('Subscription Sync Service', function () {
   });
 
   it('should load subscriptions via sync service and verify them in billing service', async function () {
-    const testSubscriptions = [
+    const testSubscriptions: Omit<Subscription, '_id'>[] = [
       {
         isActive: true,
         participantId: 'participant1',
-        subscriptionType: 'subscriptionDateTime',
+        subscriptionType: 'limitDate' as SubscriptionType,
         resourceId: 'resource1',
-        details: { subscriptionDateTime: new Date() },
+        details: {
+          limitDate: new Date(now.getTime() + 86400000),
+          startDate: now,
+          endDate: new Date(now.getTime() + 86400000),
+        },
       },
       {
         isActive: true,
         participantId: 'participant2',
-        subscriptionType: 'payAmount',
+        subscriptionType: 'payAmount' as SubscriptionType,
         resourceId: 'resource2',
-        details: { payAmount: 100 },
+        details: {
+          payAmount: 100,
+          startDate: now,
+          endDate: new Date(now.getTime() + 86400000),
+        },
       },
       {
         isActive: false,
         participantId: 'participant3',
-        subscriptionType: 'usageCount',
+        subscriptionType: 'usageCount' as SubscriptionType,
         resourceId: 'resource3',
-        details: { usageCount: 5 },
+        details: {
+          usageCount: 5,
+          startDate: now,
+          endDate: new Date(now.getTime() + 86400000),
+        },
       },
     ];
 
@@ -62,60 +77,65 @@ describe('Subscription Sync Service', function () {
     const isValidDate = (date: any) =>
       date instanceof Date && !isNaN(date.getTime());
 
-    const compareSubscription = (actual: any, expected: any) => {
+    const compareSubscription = (
+      actual: Subscription,
+      expected: Omit<Subscription, '_id'>,
+    ) => {
       expect(actual).to.include({
         isActive: expected.isActive,
         participantId: expected.participantId,
         subscriptionType: expected.subscriptionType,
         resourceId: expected.resourceId,
       });
+      expect(
+        isValidDate(actual.details.startDate),
+        'Expect "startDate" to be valid',
+      ).to.be.true;
+      expect(
+        isValidDate(actual.details.endDate),
+        'Expect "endDate" to be valid',
+      ).to.be.true;
 
-      if (expected.details.subscriptionDateTime) {
-        expect(isValidDate(actual.details.subscriptionDateTime)).to.be.true;
-      } else {
-        expect(actual.details).to.deep.equal(expected.details);
+      if (expected.details.limitDate) {
+        expect(
+          isValidDate(actual.details.limitDate),
+          'Expect "limitDate" to be valid',
+        ).to.be.true;
+      } else if (expected.details.payAmount) {
+        expect(
+          actual.details.payAmount,
+          'Expect actual "payAmount" to equal expected "payAmount"',
+        ).to.equal(expected.details.payAmount);
+      } else if (expected.details.usageCount) {
+        expect(
+          actual.details.usageCount,
+          'Expect actual "usageCount" to equal expected "usageCount"',
+        ).to.equal(expected.details.usageCount);
       }
     };
 
-    compareSubscription(loadedSubscriptions[0], {
-      isActive: true,
-      participantId: 'participant1',
-      subscriptionType: 'subscriptionDateTime',
-      resourceId: 'resource1',
-      details: { subscriptionDateTime: new Date() },
-    });
+    compareSubscription(loadedSubscriptions[0], testSubscriptions[0]);
+    compareSubscription(loadedSubscriptions[1], testSubscriptions[1]);
 
-    compareSubscription(loadedSubscriptions[1], {
-      isActive: true,
-      participantId: 'participant2',
-      subscriptionType: 'payAmount',
-      resourceId: 'resource2',
-      details: { payAmount: 100 },
-    });
-
-    expect(loadedSubscriptions).to.not.deep.include({
-      isActive: false,
-      participantId: 'participant3',
-      subscriptionType: 'usageCount',
-      resourceId: 'resource3',
-      details: { usageCount: 5 },
-    });
+    expect(loadedSubscriptions).to.not.deep.include(testSubscriptions[2]);
   });
 
   it('should handle delete operation and remove subscription from billing service', async function () {
     const mockSubscriptionData: Omit<Subscription, '_id'> = {
       isActive: true,
       participantId: 'participant123',
-      subscriptionType: 'subscriptionDateTime',
+      subscriptionType: 'limitDate' as SubscriptionType,
       resourceId: 'resource123',
       details: {
-        subscriptionDateTime: new Date(),
+        limitDate: new Date(now.getTime() + 86400000),
+        startDate: now,
+        endDate: new Date(now.getTime() + 172800000),
       },
     };
 
     const mockSubscription = new SubscriptionModel(mockSubscriptionData);
     await mockSubscription.save();
-    const savedId = mockSubscription._id as mongoose.Types.ObjectId;
+    const savedId = mockSubscription._id;
 
     const removeSubscriptionByIdSpy = sinon.spy(
       subscriptionService,
@@ -163,5 +183,6 @@ describe('Subscription Sync Service', function () {
     ).to.have.lengthOf(0);
 
     removeSubscriptionByIdSpy.restore();
+    addSubscriptionSpy.restore();
   });
 });

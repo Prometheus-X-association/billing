@@ -1,25 +1,13 @@
-import mongoose, { Document, Schema } from 'mongoose';
-
-interface SubscriptionDetail {
-  subscriptionDateTime?: Date;
-  payAmount?: number;
-  usageCount?: number;
-}
-
-interface Subscription extends Document {
-  isActive: boolean;
-  participantId: string;
-  subscriptionType: 'subscriptionDateTime' | 'payAmount' | 'usageCount';
-  resourceId?: string;
-  resourceIds?: string[];
-  details: SubscriptionDetail;
-}
+import mongoose, { Schema } from 'mongoose';
+import { Subscription } from '../types/billing.subscription.types';
 
 const SubscriptionDetailSchema = new Schema(
   {
-    subscriptionDateTime: { type: Date },
+    limitDate: { type: Date },
     payAmount: { type: Number },
     usageCount: { type: Number },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
   },
   { _id: false },
 );
@@ -29,7 +17,7 @@ const SubscriptionSchema = new Schema({
   participantId: { type: String, required: true },
   subscriptionType: {
     type: String,
-    enum: ['subscriptionDateTime', 'payAmount', 'usageCount'],
+    enum: ['limitDate', 'payAmount', 'usageCount'],
     required: true,
   },
   resourceId: { type: String },

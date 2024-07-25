@@ -45,12 +45,7 @@ class BillingSubscriptionSyncService {
         .lean();
 
       if (subscriptions.length > 0) {
-        this.billingService.addSubscription(
-          subscriptions.map((sub) => ({
-            ...sub,
-            _id: sub._id.toString(),
-          })),
-        );
+        this.billingService.addSubscription(subscriptions);
         console.log(`Loaded ${subscriptions.length} active subscriptions`);
       } else {
         console.log('No active subscriptions found');
