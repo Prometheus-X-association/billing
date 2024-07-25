@@ -16,70 +16,77 @@ export const getParticipantSubscriptions = (req: Request, res: Response) => {
   }
 };
 
-export const getResourceSubscription = (req: Request, res: Response) => {
+export const getParticipantResourceSubscriptions = (
+  req: Request,
+  res: Response,
+) => {
   try {
     const { participantId, resourceId } = req.params;
-    const subscription = BillingSubscriptionService.getResourceSubscription(
-      participantId,
-      resourceId,
-    );
-    res.status(200).json(subscription ?? {});
+    const subscriptions =
+      BillingSubscriptionService.getParticipantResourceSubscriptions(
+        participantId,
+        resourceId,
+      );
+    res.status(200).json(subscriptions ?? []);
   } catch (error) {
     res
       .status(500)
-      .json({ message: 'Error retrieving resource subscription', error });
+      .json({
+        message: 'Error retrieving participant resource subscriptions',
+        error,
+      });
   }
 };
 
-export const getGroupSubscription = (req: Request, res: Response) => {
+export const getLimitDateSubscriptions = (req: Request, res: Response) => {
   try {
     const { participantId, resourceId } = req.params;
-    const subscription = BillingSubscriptionService.getGroupSubscription(
+    const subscriptions = BillingSubscriptionService.getLimitDateSubscriptions(
       participantId,
       resourceId,
     );
-    res.status(200).json(subscription ?? {});
+    res.status(200).json(subscriptions ?? []);
   } catch (error) {
     res
       .status(500)
-      .json({ message: 'Error retrieving group subscription', error });
+      .json({ message: 'Error retrieving limit date subscriptions', error });
   }
 };
 
-export const getSubscriptionDateTime = (req: Request, res: Response) => {
+export const getPayAmountSubscriptions = (req: Request, res: Response) => {
   try {
     const { participantId, resourceId } = req.params;
-    const dateTime = BillingSubscriptionService.getSubscriptionDateTime(
+    const subscriptions = BillingSubscriptionService.getPayAmountSubscriptions(
       participantId,
       resourceId,
     );
-    res.status(200).json(dateTime ?? {});
+    res.status(200).json(subscriptions ?? []);
   } catch (error) {
     res
       .status(500)
-      .json({ message: 'Error retrieving subscription DateTime', error });
+      .json({ message: 'Error retrieving pay amount subscriptions', error });
   }
 };
 
-export const getSubscriptionPayAmount = (req: Request, res: Response) => {
+export const getUsageCountSubscriptions = (req: Request, res: Response) => {
   try {
     const { participantId, resourceId } = req.params;
-    const payAmount = BillingSubscriptionService.getSubscriptionPayAmount(
+    const subscriptions = BillingSubscriptionService.getUsageCountSubscriptions(
       participantId,
       resourceId,
     );
-    res.status(200).json(payAmount ?? {});
+    res.status(200).json(subscriptions ?? []);
   } catch (error) {
     res
       .status(500)
-      .json({ message: 'Error retrieving subscription pay amount', error });
+      .json({ message: 'Error retrieving usage count subscriptions', error });
   }
 };
 
-export const getSubscriptionUsageCount = (req: Request, res: Response) => {
+export const getLastActiveUsageCount = (req: Request, res: Response) => {
   try {
     const { participantId, resourceId } = req.params;
-    const usageCount = BillingSubscriptionService.getSubscriptionUsageCount(
+    const usageCount = BillingSubscriptionService.getLastActiveUsageCount(
       participantId,
       resourceId,
     );
@@ -87,7 +94,53 @@ export const getSubscriptionUsageCount = (req: Request, res: Response) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: 'Error retrieving subscription usage count', error });
+      .json({ message: 'Error retrieving last active usage count', error });
+  }
+};
+
+export const getLastActivePayAmount = (req: Request, res: Response) => {
+  try {
+    const { participantId, resourceId } = req.params;
+    const payAmount = BillingSubscriptionService.getLastActivePayAmount(
+      participantId,
+      resourceId,
+    );
+    res.status(200).json(payAmount ?? {});
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error retrieving last active pay amount', error });
+  }
+};
+
+export const getLastActiveLimitDate = (req: Request, res: Response) => {
+  try {
+    const { participantId, resourceId } = req.params;
+    const limitDate = BillingSubscriptionService.getLastActiveLimitDate(
+      participantId,
+      resourceId,
+    );
+    res.status(200).json(limitDate ?? {});
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error retrieving last active limit date', error });
+  }
+};
+
+export const hasActiveSubscriptionFor = (req: Request, res: Response) => {
+  try {
+    const { participantId, resourceId } = req.params;
+    const hasActiveSubscription =
+      BillingSubscriptionService.hasActiveSubscriptionFor(
+        participantId,
+        resourceId,
+      );
+    res.status(200).json({ hasActiveSubscription });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error checking active subscription', error });
   }
 };
 
