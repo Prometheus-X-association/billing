@@ -1,7 +1,8 @@
 import { config } from './config/environment';
-import { getServerApp } from './server';
+import { getApp } from './app';
 import express from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
+import BillingSubscriptionSyncService from './services/BillingSubscriptionSyncService';
 
 type AppServer = {
   app: express.Application;
@@ -9,8 +10,10 @@ type AppServer = {
 };
 
 export const main = async (): Promise<AppServer> => {
-  const app = await getServerApp();
+  const app = await getApp();
   const { port } = config;
+  // Init sync service on server start
+  await BillingSubscriptionSyncService.getService();
   const server = app.listen(port, () => {
     console.log('Server running on: http://localhost:' + port);
   });

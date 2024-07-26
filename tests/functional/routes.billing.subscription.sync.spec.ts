@@ -16,7 +16,7 @@ Reflect.set(
   function (_mongoUri: string | undefined) {},
 );
 
-import { getServerApp } from '../../src/server';
+import { getApp } from '../../src/app';
 import http from 'http';
 import { _logYellow, _logGreen, _logObject } from '../utils/utils';
 import SubscriptionModel from '../../src/models/SubscriptionModel';
@@ -32,7 +32,7 @@ describe('Billing Subscription Sync Service via API', () => {
     await mongoose.connect(mongoUri);
     config.mongoURI = mongoUri;
 
-    const app = await getServerApp();
+    const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;
       server = app.listen(port, () => {

@@ -1,7 +1,7 @@
 import supertest from 'supertest';
 import { expect } from 'chai';
 import { config } from '../../src/config/environment';
-import { getServerApp } from '../../src/server';
+import { getApp } from '../../src/app';
 import http from 'http';
 import { _logYellow, _logGreen, _logObject } from '../utils/utils';
 import BillingSubscriptionService from '../../src/services/BillingSubscriptionService';
@@ -51,7 +51,7 @@ describe('Billing Subscription via API', () => {
         },
       },
     ]);
-    const app = await getServerApp();
+    const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;
       server = app.listen(port, () => {

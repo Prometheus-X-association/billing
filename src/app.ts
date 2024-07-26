@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import routes from './routes/';
+import routes from './routes';
 
-export const getServerApp = async (): Promise<express.Application> => {
+export const getApp = async (): Promise<express.Application> => {
   const app = express();
 
   app.use(cors({ origin: true, credentials: true }));

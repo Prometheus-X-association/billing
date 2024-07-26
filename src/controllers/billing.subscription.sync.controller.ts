@@ -1,20 +1,9 @@
 import { Request, Response } from 'express';
 import BillingSubscriptionSyncService from '../services/BillingSubscriptionSyncService';
 
-const billingSubscriptionSyncService = (async () => {
-  try {
-    const service = await BillingSubscriptionSyncService.getService();
-    console.log('Billing Subscription Sync Service initialized');
-    return service;
-  } catch (error) {
-    console.error('Failed to create instance:', error);
-    return undefined;
-  }
-})();
-
 export const addSubscriptions = async (req: Request, res: Response) => {
   try {
-    const service = await billingSubscriptionSyncService;
+    const service = await BillingSubscriptionSyncService.getService();
     if (!service) {
       return res.status(500).json({ message: 'Service unavailable' });
     }
@@ -33,7 +22,7 @@ export const addSubscriptions = async (req: Request, res: Response) => {
 
 export const removeSubscription = async (req: Request, res: Response) => {
   try {
-    const service = await billingSubscriptionSyncService;
+    const service = await BillingSubscriptionSyncService.getService();
     if (!service) {
       return res.status(500).json({ message: 'Service unavailable' });
     }
