@@ -10,7 +10,7 @@ import {
   getLastActiveLimitDate,
   hasActiveSubscriptionFor,
   getAllSubscriptions,
-} from '../controllers/billing.subscription.controller';
+} from '../../controllers/billing.subscription.controller';
 
 const router = Router();
 
