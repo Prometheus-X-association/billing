@@ -29,7 +29,7 @@ export const removeSubscription = async (req: Request, res: Response) => {
     const { subscriptionId } = req.params;
     const result = await service.removeSubscription(subscriptionId);
     if (result) {
-      res.status(200).json({
+      res.status(204).json({
         message: 'Subscription removed successfully',
         subscription: result,
       });
