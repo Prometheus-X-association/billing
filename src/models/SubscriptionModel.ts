@@ -1,5 +1,50 @@
-import mongoose, { Schema } from 'mongoose';
-import { Subscription } from '../types/billing.subscription.types';
+import mongoose, { Schema, Document, Collection, Types } from 'mongoose';
+import { Subscription as BaseSubscription } from '../types/billing.subscription.types';
+import {
+  ChangeStreamDocument,
+  ChangeStreamInsertDocument,
+  ChangeStreamDeleteDocument,
+} from 'mongodb';
+
+export type ChangeHandlerCallback = (
+  change: ChangeStreamDocument,
+) => Promise<void>;
+
+interface Subscription extends Omit<BaseSubscription, '_id'> {
+  _id: Types.ObjectId;
+}
+
+interface SubscriptionDocument
+  extends Omit<Document, 'collection'>,
+    Subscription {
+  collection: Collection;
+}
+
+class ChangeHandler {
+  private callbacks: { [key: string]: ChangeHandlerCallback | null } = {
+    insert: null,
+    delete: null,
+  };
+
+  public registerCallback(
+    event: 'insert' | 'delete',
+    callback: ChangeHandlerCallback,
+  ): void {
+    this.callbacks[event] = callback;
+  }
+
+  public async triggerCallback(
+    event: 'insert' | 'delete',
+    change: ChangeStreamDocument,
+  ): Promise<void> {
+    const callback = this.callbacks[event];
+    if (callback) {
+      await callback(change);
+    }
+  }
+}
+
+export const changeHandler = new ChangeHandler();
 
 const SubscriptionDetailSchema = new Schema(
   {
@@ -27,7 +72,56 @@ const SubscriptionSchema = new Schema({
 
 SubscriptionSchema.index({ participantId: 1, resourceId: 1 });
 
-const SubscriptionModel = mongoose.model<Subscription>(
+interface SubscriptionDocument
+  extends Omit<Document, 'collection'>,
+    Subscription {
+  _id: Types.ObjectId;
+  collection: Collection;
+}
+
+const handleInsert = async (doc: SubscriptionDocument) => {
+  const change: Partial<ChangeStreamInsertDocument<Subscription>> = {
+    operationType: 'insert',
+    fullDocument: doc.toObject(),
+    documentKey: { _id: doc._id },
+    ns: { db: doc.db.name, coll: doc.collection.collectionName },
+  };
+  await changeHandler.triggerCallback('insert', change as ChangeStreamDocument);
+};
+
+SubscriptionSchema.post(
+  'insertMany',
+  async function (docs: SubscriptionDocument[]) {
+    for (const doc of docs) {
+      await handleInsert(doc);
+    }
+  },
+);
+
+SubscriptionSchema.post('save', handleInsert);
+
+SubscriptionSchema.post(
+  'findOneAndDelete',
+  async function (doc: SubscriptionDocument) {
+    const change: Partial<ChangeStreamDeleteDocument> = {
+      operationType: 'delete',
+      documentKey: { _id: doc._id },
+      ns: { db: doc.db.name, coll: doc.collection.collectionName },
+    };
+    await changeHandler.triggerCallback(
+      'delete',
+      change as ChangeStreamDocument,
+    );
+  },
+);
+
+export const toSubscription = (doc: SubscriptionDocument): BaseSubscription => {
+  const subscription = doc.toObject();
+  subscription._id = subscription._id.toString();
+  return subscription as BaseSubscription;
+};
+
+const SubscriptionModel = mongoose.model<Subscription & Document>(
   'Subscription',
   SubscriptionSchema,
 );

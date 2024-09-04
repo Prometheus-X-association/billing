@@ -5,7 +5,11 @@ import {
   ChangeStreamDeleteDocument,
   ChangeStreamDocument,
 } from 'mongodb';
-import SubscriptionModel from '../models/SubscriptionModel';
+import SubscriptionModel, {
+  changeHandler,
+  ChangeHandlerCallback,
+  toSubscription,
+} from '../models/SubscriptionModel';
 import { config } from '../config/environment';
 import { Subscription } from '../types/billing.subscription.types';
 
@@ -19,6 +23,9 @@ class BillingSubscriptionSyncService {
     if (!BillingSubscriptionSyncService.instance) {
       BillingSubscriptionSyncService.instance =
         new BillingSubscriptionSyncService();
+      BillingSubscriptionSyncService.instance.setBillingService(
+        BillingSubscriptionService.getService(),
+      );
       await BillingSubscriptionSyncService.instance.connect(config.mongoURI);
     }
     return BillingSubscriptionSyncService.instance;
@@ -34,6 +41,12 @@ class BillingSubscriptionSyncService {
     } catch (error) {
       console.error('Failed to connect to MongoDB:', error);
       throw error;
+    }
+    try {
+      await this.loadSubscriptions();
+      this.handleChanges();
+    } catch (error) {
+      console.error('Failed to sync:', error);
     }
   }
 
@@ -53,18 +66,18 @@ class BillingSubscriptionSyncService {
 
   public async loadSubscriptions() {
     if (!this.billingService) {
-      throw new Error('Billing service is not set');
+      console.warn('Billing service is not set');
+      return;
     }
 
     try {
       const subscriptions = await SubscriptionModel.find({
         isActive: true,
-      })
-        .select('-__v')
-        .lean();
+      }).select('-__v');
 
       if (subscriptions.length > 0) {
-        this.billingService.addSubscription(subscriptions);
+        const subs: Subscription[] = subscriptions.map(toSubscription);
+        this.billingService.addSubscription(subs);
         console.log(`Loaded ${subscriptions.length} active subscriptions`);
       } else {
         console.log('No active subscriptions found');
@@ -75,40 +88,27 @@ class BillingSubscriptionSyncService {
     }
   }
 
-  public async startWatching() {
-    try {
-      await mongoose.connection.asPromise();
-      console.log('Connected to MongoDB');
-
-      await this.loadSubscriptions();
-
-      console.log('Watching for changes on the subscriptions collection');
-      const changeStream = SubscriptionModel.watch();
-      changeStream.on('change', (change: ChangeStreamDocument) => {
-        console.log('Change detected:', change);
-        this.handleChange(change);
-      });
-    } catch (error) {
-      console.error('Error starting change stream:', error);
-    }
-  }
-
-  private async handleChange(change: ChangeStreamDocument) {
-    switch (change.operationType) {
-      case 'insert':
+  private handleChanges() {
+    changeHandler.registerCallback(
+      'insert',
+      async (change: ChangeStreamDocument): Promise<void> => {
         this.handleInsert(change as ChangeStreamInsertDocument);
-        break;
-      case 'delete':
+      },
+    );
+    changeHandler.registerCallback(
+      'delete',
+      async (change: ChangeStreamDocument): Promise<void> => {
         this.handleDelete(change as ChangeStreamDeleteDocument);
-        break;
-      default:
-        console.warn('Unhandled change type:', change.operationType);
-    }
+      },
+    );
   }
 
   private handleInsert(change: ChangeStreamInsertDocument) {
     if (this.billingService) {
-      this.billingService.addSubscription(change.fullDocument as any);
+      this.billingService.addSubscription({
+        ...(change.fullDocument as Subscription),
+        _id: (change.fullDocument as Subscription)._id.toString(),
+      });
     } else {
       throw new Error('Billing service is not set');
     }

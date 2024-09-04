@@ -7,6 +7,7 @@ class BillingSubscriptionService {
   public contructor() {}
 
   public static getService(): BillingSubscriptionService {
+    console.log('getService BillingSubscriptionService');
     if (!BillingSubscriptionService.instance) {
       BillingSubscriptionService.instance = new BillingSubscriptionService();
     }
@@ -249,6 +250,15 @@ class BillingSubscriptionService {
    */
   public getAllSubscriptions(): Subscription[] {
     return this.subscriptions;
+  }
+
+  /**
+   * Returns all subscriptions.
+   *
+   * @returns An array of all subscriptions.
+   */
+  public getAllActiveSubscriptions(): Subscription[] {
+    return this.subscriptions.filter((sub) => sub.isActive);
   }
 }
 

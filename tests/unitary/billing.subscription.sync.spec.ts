@@ -69,9 +69,8 @@ describe('Subscription Sync Service', function () {
     ];
 
     await SubscriptionModel.insertMany(testSubscriptions);
-    await syncService.loadSubscriptions();
 
-    const loadedSubscriptions = subscriptionService.getAllSubscriptions();
+    const loadedSubscriptions = subscriptionService.getAllActiveSubscriptions();
     expect(loadedSubscriptions).to.have.lengthOf(2);
 
     const isValidDate = (date: any) =>
@@ -133,10 +132,6 @@ describe('Subscription Sync Service', function () {
       },
     };
 
-    const mockSubscription = new SubscriptionModel(mockSubscriptionData);
-    await mockSubscription.save();
-    const savedId = mockSubscription._id;
-
     const removeSubscriptionByIdSpy = sinon.spy(
       subscriptionService,
       'removeSubscriptionById',
@@ -147,19 +142,11 @@ describe('Subscription Sync Service', function () {
       'addSubscription',
     );
 
-    // watch not working with MongoMemoryServer
-    await (syncService as any).handleChange({
-      operationType: 'insert',
-      documentKey: { _id: savedId },
-      fullDocument: {
-        _id: savedId.toString(),
-        ...mockSubscriptionData,
-      },
-    });
-    await (syncService as any).handleChange({
-      operationType: 'delete',
-      documentKey: { _id: savedId },
-    });
+    const mockSubscription = new SubscriptionModel(mockSubscriptionData);
+    await mockSubscription.save();
+    const savedId = mockSubscription._id;
+
+    await SubscriptionModel.findByIdAndDelete(savedId);
 
     expect(
       addSubscriptionSpy.calledWith(
@@ -177,6 +164,7 @@ describe('Subscription Sync Service', function () {
 
     const subscriptions =
       subscriptionService.getParticipantSubscriptions('participant123');
+
     expect(
       subscriptions,
       'Expect subscriptions array to be empty',
