@@ -100,6 +100,22 @@ SubscriptionSchema.post(
 
 SubscriptionSchema.post('save', handleInsert);
 
+SubscriptionSchema.pre('findOneAndDelete', async function () {
+  const docToDelete = await this.model.findOne(this.getFilter());
+  if (docToDelete) {
+    const change: Partial<ChangeStreamDeleteDocument> = {
+      operationType: 'delete',
+      documentKey: { _id: docToDelete._id },
+      ns: { db: 'votre_nom_de_base_de_données', coll: 'subscriptions' },
+    };
+    await changeHandler.triggerCallback(
+      'delete',
+      change as ChangeStreamDocument,
+    );
+  }
+});
+
+/*
 SubscriptionSchema.post(
   'findOneAndDelete',
   async function (doc: SubscriptionDocument) {
@@ -114,6 +130,7 @@ SubscriptionSchema.post(
     );
   },
 );
+*/
 
 export const toSubscription = (doc: SubscriptionDocument): BaseSubscription => {
   const subscription = doc.toObject();

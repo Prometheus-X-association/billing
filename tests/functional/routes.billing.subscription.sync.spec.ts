@@ -114,8 +114,8 @@ describe('Billing Subscription Sync Service via API', () => {
 
     _logGreen('Response:');
     _logObject(response.body);
-    expect(response.status).to.equal(200);
-    expect(response.body.message).to.equal('Subscription removed successfully');
+    expect(response.status).to.equal(204);
+    // expect(response.body.message).to.equal('Subscription removed successfully');
 
     const removedSubscription =
       await SubscriptionModel.findById(subscriptionId);

@@ -53,7 +53,7 @@ class BillingSubscriptionSyncService {
       await this.loadSubscriptions();
       this.handleChanges();
       Logger.log({
-        message: 'Sync succeed',
+        message: 'Sync completed',
       });
     } catch (error) {
       const err = error as Error;
@@ -101,7 +101,7 @@ class BillingSubscriptionSyncService {
         const subs: Subscription[] = subscriptions.map(toSubscription);
         this.billingService.addSubscription(subs);
         Logger.log({
-          message: `Loaded ${subscriptions.length} active subscriptions`,
+          message: `Syncing ${subscriptions.length} active subscriptions into in-memory cache during startup`,
         });
       } else {
         Logger.warn({
@@ -135,9 +135,13 @@ class BillingSubscriptionSyncService {
 
   private handleInsert(change: ChangeStreamInsertDocument) {
     if (this.billingService) {
+      const _id = (change.fullDocument as Subscription)._id.toString();
       this.billingService.addSubscription({
         ...(change.fullDocument as Subscription),
-        _id: (change.fullDocument as Subscription)._id.toString(),
+        _id,
+      });
+      Logger.log({
+        message: `Syncing in-memory cache after subscription insertion: ${_id}`,
       });
     } else {
       throw new Error('Billing service is not set');
@@ -145,9 +149,12 @@ class BillingSubscriptionSyncService {
   }
 
   private handleDelete(change: ChangeStreamDeleteDocument) {
-    const subscriptionId = change.documentKey._id;
+    const _id = change.documentKey._id;
     if (this.billingService) {
-      this.billingService.removeSubscriptionById(subscriptionId.toString());
+      this.billingService.removeSubscriptionById(_id.toString());
+      Logger.log({
+        message: `Syncing in-memory cache after subscription deletion: ${_id}`,
+      });
     } else {
       throw new Error('Billing service is not set');
     }
@@ -157,7 +164,7 @@ class BillingSubscriptionSyncService {
     try {
       const result = await SubscriptionModel.insertMany(subscriptions);
       Logger.log({
-        message: `Added ${result.length} subscriptions`,
+        message: `Added ${result.length} new subscriptions`,
       });
       return result;
     } catch (error) {
