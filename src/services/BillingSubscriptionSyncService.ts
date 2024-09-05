@@ -7,11 +7,11 @@ import {
 } from 'mongodb';
 import SubscriptionModel, {
   changeHandler,
-  ChangeHandlerCallback,
   toSubscription,
 } from '../models/SubscriptionModel';
 import { config } from '../config/environment';
 import { Subscription } from '../types/billing.subscription.types';
+import { Logger } from '../libs/Logger';
 
 class BillingSubscriptionSyncService {
   private static instance: BillingSubscriptionSyncService;
@@ -21,12 +21,11 @@ class BillingSubscriptionSyncService {
 
   public static async getService(): Promise<BillingSubscriptionSyncService> {
     if (!BillingSubscriptionSyncService.instance) {
-      BillingSubscriptionSyncService.instance =
-        new BillingSubscriptionSyncService();
-      BillingSubscriptionSyncService.instance.setBillingService(
-        BillingSubscriptionService.getService(),
-      );
-      await BillingSubscriptionSyncService.instance.connect(config.mongoURI);
+      const instance = new BillingSubscriptionSyncService();
+      instance.setBillingService(BillingSubscriptionService.getService());
+      await instance.connect(config.mongoURI);
+      await instance.sync();
+      BillingSubscriptionSyncService.instance = instance;
     }
     return BillingSubscriptionSyncService.instance;
   }
@@ -37,25 +36,46 @@ class BillingSubscriptionSyncService {
         throw new Error('Mongo URI is undefined');
       }
       await mongoose.connect(mongoUri);
-      console.log('Connected to MongoDB from sync service');
+      Logger.log({
+        message: 'Connected to MongoDB from sync service',
+      });
     } catch (error) {
-      console.error('Failed to connect to MongoDB:', error);
+      const err = error as Error;
+      Logger.error({
+        message: `Failed to connect to MongoDB: ${err.message}`,
+      });
       throw error;
     }
+  }
+
+  private async sync() {
     try {
       await this.loadSubscriptions();
       this.handleChanges();
+      Logger.log({
+        message: 'Sync succeed',
+      });
     } catch (error) {
-      console.error('Failed to sync:', error);
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Failed to sync: ${err.message}`,
+      });
     }
   }
 
   public async disconnect() {
     try {
       await mongoose.disconnect();
-      console.log('Disconnected from MongoDB');
+      Logger.log({
+        message: 'Disconnected from MongoDB',
+      });
     } catch (error) {
-      console.error('Failed to disconnect from MongoDB:', error);
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Failed to disconnect from MongoDB: ${err.message}`,
+      });
       throw error;
     }
   }
@@ -66,7 +86,9 @@ class BillingSubscriptionSyncService {
 
   public async loadSubscriptions() {
     if (!this.billingService) {
-      console.warn('Billing service is not set');
+      Logger.warn({
+        message: 'Billing service is not set',
+      });
       return;
     }
 
@@ -78,12 +100,20 @@ class BillingSubscriptionSyncService {
       if (subscriptions.length > 0) {
         const subs: Subscription[] = subscriptions.map(toSubscription);
         this.billingService.addSubscription(subs);
-        console.log(`Loaded ${subscriptions.length} active subscriptions`);
+        Logger.log({
+          message: `Loaded ${subscriptions.length} active subscriptions`,
+        });
       } else {
-        console.log('No active subscriptions found');
+        Logger.warn({
+          message: 'No active subscriptions found',
+        });
       }
     } catch (error) {
-      console.error('Error loading subscriptions:', error);
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error loading subscriptions: ${err.message}`,
+      });
       throw error;
     }
   }
@@ -126,10 +156,16 @@ class BillingSubscriptionSyncService {
   public async addSubscriptions(subscriptions: Subscription[]) {
     try {
       const result = await SubscriptionModel.insertMany(subscriptions);
-      console.log(`Added ${result.length} subscriptions`);
+      Logger.log({
+        message: `Added ${result.length} subscriptions`,
+      });
       return result;
     } catch (error) {
-      console.error('Error adding subscriptions:', error);
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error adding subscriptions: ${err.message}`,
+      });
       throw error;
     }
   }
@@ -138,14 +174,22 @@ class BillingSubscriptionSyncService {
     try {
       const result = await SubscriptionModel.findByIdAndDelete(subscriptionId);
       if (result) {
-        console.log(`Removed subscription with ID: ${subscriptionId}`);
+        Logger.log({
+          message: `Removed subscription with ID: ${subscriptionId}`,
+        });
         return result;
       } else {
-        console.log(`Subscription with ID ${subscriptionId} not found`);
+        Logger.warn({
+          message: `Subscription with ID ${subscriptionId} not found`,
+        });
         return null;
       }
     } catch (error) {
-      console.error('Error removing subscription:', error);
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error removing subscription: ${err.message}`,
+      });
       throw error;
     }
   }

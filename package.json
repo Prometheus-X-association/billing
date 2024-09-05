@@ -46,6 +46,8 @@
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.14.2",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }

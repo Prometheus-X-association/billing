@@ -7,7 +7,6 @@ class BillingSubscriptionService {
   public contructor() {}
 
   public static getService(): BillingSubscriptionService {
-    console.log('getService BillingSubscriptionService');
     if (!BillingSubscriptionService.instance) {
       BillingSubscriptionService.instance = new BillingSubscriptionService();
     }
