@@ -10,6 +10,7 @@ import {
   getLastActiveLimitDate,
   hasActiveSubscriptionFor,
   getAllSubscriptions,
+  getValidActivePayAmountSubscriptions,
 } from '../../controllers/billing.subscription.controller';
 
 const router = Router();
@@ -52,6 +53,11 @@ router.get(
 router.get(
   '/subscriptions/lastactive/limitdate/for/resource/:participantId/:resourceId',
   getLastActiveLimitDate,
+);
+
+router.get(
+  '/subscriptions/validactive/pay/for/resource/:participantId/:resourceId',
+  getValidActivePayAmountSubscriptions,
 );
 
 router.get(

@@ -29,12 +29,10 @@ export const getParticipantResourceSubscriptions = (
       );
     res.status(200).json(subscriptions ?? []);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: 'Error retrieving participant resource subscriptions',
-        error,
-      });
+    res.status(500).json({
+      message: 'Error retrieving participant resource subscriptions',
+      error,
+    });
   }
 };
 
@@ -125,6 +123,25 @@ export const getLastActiveLimitDate = (req: Request, res: Response) => {
     res
       .status(500)
       .json({ message: 'Error retrieving last active limit date', error });
+  }
+};
+
+export const getValidActivePayAmountSubscriptions = (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { participantId, resourceId } = req.params;
+    const payAmount =
+      BillingSubscriptionService.getValidActivePayAmountSubscriptions(
+        participantId,
+        resourceId,
+      );
+    res.status(200).json(payAmount ?? {});
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error retrieving last active pay amount', error });
   }
 };
 

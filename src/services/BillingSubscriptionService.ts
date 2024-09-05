@@ -225,6 +225,56 @@ class BillingSubscriptionService {
   }
 
   /**
+   *
+   */
+  public getValidActiveUsageCountSubscriptions(
+    participantId: string,
+    resourceId: string,
+  ): Array<{ subscriptionId: string; limitDate: number }> {
+    return [];
+  }
+
+  /**
+   * Returns all active pay amount subscriptions for a given participant and resource.
+   * This method filters active 'payAmount' subscriptions and selects those that are still valid
+   * (payAmount > 0 and endDate in the future).
+   *
+   * @param participantId - The ID of the participant.
+   * @param resourceId - The ID of the resource.
+   * @returns An array of objects containing the subscription ID and the pay amount,
+   *          or an empty array if no valid active subscriptions are found.
+   */
+  public getValidActivePayAmountSubscriptions(
+    participantId: string,
+    resourceId: string,
+  ): Array<{ subscriptionId: string; payAmount: number }> {
+    const now = new Date();
+    const activeSubscriptions = this.getPayAmountSubscriptions(
+      participantId,
+      resourceId,
+    ).filter(
+      (sub) =>
+        sub.isActive &&
+        sub.details.endDate > now &&
+        (sub.details.payAmount ?? 0) > 0,
+    );
+    return activeSubscriptions.map((sub) => ({
+      subscriptionId: sub._id,
+      payAmount: sub.details.payAmount ?? 0,
+    }));
+  }
+
+  /**
+   *
+   */
+  public getValidActiveLimitDateSubscriptions(
+    participantId: string,
+    resourceId: string,
+  ): Array<{ subscriptionId: string; limitDate: number }> {
+    return [];
+  }
+
+  /**
    * Checks if there is an active subscription for a resource of a given participant.
    *
    * @param participantId - The Id of the participant.
