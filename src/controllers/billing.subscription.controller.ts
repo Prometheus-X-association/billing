@@ -126,6 +126,25 @@ export const getLastActiveLimitDate = (req: Request, res: Response) => {
   }
 };
 
+export const getValidActiveUsageCountSubscriptions = (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { participantId, resourceId } = req.params;
+    const usageCount =
+      BillingSubscriptionService.getValidActiveUsageCountSubscriptions(
+        participantId,
+        resourceId,
+      );
+    res.status(200).json(usageCount ?? {});
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error retrieving last active usage count', error });
+  }
+};
+
 export const getValidActivePayAmountSubscriptions = (
   req: Request,
   res: Response,
@@ -142,6 +161,25 @@ export const getValidActivePayAmountSubscriptions = (
     res
       .status(500)
       .json({ message: 'Error retrieving last active pay amount', error });
+  }
+};
+
+export const getValidActiveLimitDateSubscriptions = (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { participantId, resourceId } = req.params;
+    const limitDate =
+      BillingSubscriptionService.getValidActiveLimitDateSubscriptions(
+        participantId,
+        resourceId,
+      );
+    res.status(200).json(limitDate ?? {});
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error retrieving last active usage count', error });
   }
 };
 

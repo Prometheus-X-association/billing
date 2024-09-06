@@ -48,6 +48,16 @@ class BillingSubscriptionSyncService {
     }
   }
 
+  public async refresh() {
+    if (!this.billingService) {
+      Logger.warn({
+        message: `Unable to refresh: Billing service is not set`,
+      });
+      return;
+    }
+    this.billingService.clean();
+    this.sync();
+  }
   private async sync() {
     try {
       await this.loadSubscriptions();

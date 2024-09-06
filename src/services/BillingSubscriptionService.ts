@@ -13,6 +13,10 @@ class BillingSubscriptionService {
     return BillingSubscriptionService.instance;
   }
 
+  public clean() {
+    this.subscriptions = [];
+  }
+
   public addSubscription(subscriptions: Subscription[] | Subscription) {
     if (Array.isArray(subscriptions)) {
       this.subscriptions.push(...subscriptions);

@@ -115,23 +115,6 @@ SubscriptionSchema.pre('findOneAndDelete', async function () {
   }
 });
 
-/*
-SubscriptionSchema.post(
-  'findOneAndDelete',
-  async function (doc: SubscriptionDocument) {
-    const change: Partial<ChangeStreamDeleteDocument> = {
-      operationType: 'delete',
-      documentKey: { _id: doc._id },
-      ns: { db: doc.db.name, coll: doc.collection.collectionName },
-    };
-    await changeHandler.triggerCallback(
-      'delete',
-      change as ChangeStreamDocument,
-    );
-  },
-);
-*/
-
 export const toSubscription = (doc: SubscriptionDocument): BaseSubscription => {
   const subscription = doc.toObject();
   subscription._id = subscription._id.toString();
