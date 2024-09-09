@@ -10,6 +10,7 @@ interface BillingSubscriptionCleanRefreshConfig {
 export class BillingSubscriptionCleanRefresh {
   private config: BillingSubscriptionCleanRefreshConfig;
   private billingSync: BillingSubscriptionSyncService;
+  private cronJob: cron.ScheduledTask | null = null;
 
   constructor(
     config: Partial<BillingSubscriptionCleanRefreshConfig> = {},
@@ -66,7 +67,7 @@ export class BillingSubscriptionCleanRefresh {
     Logger.log({
       message: `Starting BillingSubscriptionCleanRefresh service with schedule: ${this.config.cronSchedule}`,
     });
-    cron.schedule(this.config.cronSchedule, async () => {
+    this.cronJob = cron.schedule(this.config.cronSchedule, async () => {
       Logger.log({
         message: 'Running scheduled subscription update and clean',
       });
@@ -83,5 +84,11 @@ export class BillingSubscriptionCleanRefresh {
         });
       }
     });
+  }
+
+  public stop(): void {
+    if (this.cronJob) {
+      this.cronJob.stop();
+    }
   }
 }

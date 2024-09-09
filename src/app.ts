@@ -30,16 +30,20 @@ export const getApp = async (): Promise<express.Application> => {
   app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.get('/health', (req: Request, res: Response) => {
+  app.get('/api/ping', (req: Request, res: Response) => {
     return res.status(200).send('OK');
   });
 
-  app.use('/api-docs', swaggerUi.serve, (req: any, res: any, next: any) => {
-    const swaggerDocs = swaggerJsDoc(swaggerOptions);
-    swaggerUi.setup(swaggerDocs, {
-      customCss: '.swagger-ui .models { display: none }',
-    })(req, res, next);
-  });
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    (req: Request, res: Response, next: NextFunction) => {
+      const swaggerDocs = swaggerJsDoc(swaggerOptions);
+      swaggerUi.setup(swaggerDocs, {
+        customCss: '.swagger-ui .models { display: none }',
+      })(req, res, next);
+    },
+  );
 
   routes(app);
 

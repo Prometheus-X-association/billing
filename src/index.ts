@@ -4,6 +4,7 @@ import express from 'express';
 import { IncomingMessage, Server, ServerResponse } from 'http';
 import BillingSubscriptionSyncService from './services/BillingSubscriptionSyncService';
 import { Logger } from './libs/Logger';
+import { BillingSubscriptionCleanRefresh } from './services/BillingSubscriptionCleanRefresh';
 
 type AppServer = {
   app: express.Application;
@@ -14,7 +15,10 @@ export const main = async (): Promise<AppServer> => {
   const app = await getApp();
   const { port } = config;
   // Init sync service on server start
-  await BillingSubscriptionSyncService.getService();
+  const syncService = await BillingSubscriptionSyncService.getService();
+  // Init cleaner service on server start
+  const cleanerService = new BillingSubscriptionCleanRefresh({}, syncService);
+  cleanerService.start();
   const server = app.listen(port, () => {
     Logger.log({
       message: `Server running on: http://localhost: ${port}`,

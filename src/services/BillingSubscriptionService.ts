@@ -229,13 +229,33 @@ class BillingSubscriptionService {
   }
 
   /**
+   * Returns all active 'usageCount' subscriptions for a given participant and resource.
+   * This method filters active 'usageCount' subscriptions and selects those that are still valid
+   * (endDate in the future and usageCount greater than 0).
    *
+   * @param participantId - The ID of the participant.
+   * @param resourceId - The ID of the resource.
+   * @returns An array of objects containing the subscription ID and the remaining usage count,
+   *          or an empty array if no valid active subscriptions are found.
    */
   public getValidActiveUsageCountSubscriptions(
     participantId: string,
     resourceId: string,
-  ): Array<{ subscriptionId: string; limitDate: number }> {
-    return [];
+  ): Array<{ subscriptionId: string; usageCount: number }> {
+    const now = new Date();
+    const activeSubscriptions = this.getUsageCountSubscriptions(
+      participantId,
+      resourceId,
+    ).filter(
+      (sub) =>
+        sub.isActive &&
+        sub.details.endDate > now &&
+        (sub.details.usageCount ?? 0) > 0,
+    );
+    return activeSubscriptions.map((sub) => ({
+      subscriptionId: sub._id,
+      usageCount: sub.details.usageCount ?? 0,
+    }));
   }
 
   /**
@@ -269,13 +289,31 @@ class BillingSubscriptionService {
   }
 
   /**
+   * Returns all active 'limitDate' subscriptions for a given participant and resource.
+   * This method filters active 'limitDate' subscriptions and selects those that are still valid
+   * (limitDate in the future).
    *
+   * @param participantId - The ID of the participant.
+   * @param resourceId - The ID of the resource.
+   * @returns An array of objects containing the subscription ID and the limit date,
+   *          or an empty array if no valid active subscriptions are found.
    */
   public getValidActiveLimitDateSubscriptions(
     participantId: string,
     resourceId: string,
   ): Array<{ subscriptionId: string; limitDate: number }> {
-    return [];
+    const now = new Date();
+    const activeSubscriptions = this.getLimitDateSubscriptions(
+      participantId,
+      resourceId,
+    ).filter(
+      (sub) =>
+        sub.isActive && sub.details.limitDate && sub.details.limitDate > now,
+    );
+    return activeSubscriptions.map((sub) => ({
+      subscriptionId: sub._id,
+      limitDate: sub.details.limitDate?.getTime() ?? 0,
+    }));
   }
 
   /**
