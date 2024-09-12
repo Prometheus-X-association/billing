@@ -9,9 +9,10 @@ const mongoURI =
   process.env.MONGO_URI ?? 'mongodb://127.0.0.1:27017/billing-dev';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY ?? null;
-
+const stripeWebhookSecret = process.env.STRIPE_SECRET_WEBHOOK ?? null;
 export const config = {
   port,
   mongoURI,
   stripeSecretKey,
+  stripeWebhookSecret,
 };

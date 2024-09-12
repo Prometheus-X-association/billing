@@ -1,6 +1,7 @@
 // import Auth from '../../services/AuthenticationService';
 import billingSubscription from './billing.subscription.routes';
 import billingSubscriptionSync from './billing.subscription.sync.routes';
+import stripeSubscription from './stripe.subscription.routes';
 
 const routers = [
   {
@@ -10,6 +11,10 @@ const routers = [
   {
     prefix: '/sync/',
     router: billingSubscriptionSync,
+  },
+  {
+    prefix: '/stripe/',
+    router: stripeSubscription,
   },
 ];
 export default {

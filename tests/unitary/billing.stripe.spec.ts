@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Stripe from 'stripe';
-import StripeService from '../../src/services/StripeService';
+import StripeService from '../../src/services/StripeSubscriptionService';
 
 const email = 'test@example.com';
 const customerId = 'test_customer_id';
@@ -12,17 +12,19 @@ describe('StripeService test cases', () => {
     };
   };
 
-  beforeEach(() => {
+  before(() => {
     stripeStub = {
       customers: {
         create: sinon.stub().resolves({ id: customerId } as Stripe.Customer),
       },
     };
 
-    sinon.stub(Stripe.prototype, 'constructor' as any).returns(stripeStub);
+    sinon
+      .stub(StripeService.prototype, 'getNewStripe' as any)
+      .returns(stripeStub);
   });
 
-  afterEach(() => {
+  after(() => {
     sinon.restore();
   });
 
@@ -40,7 +42,7 @@ describe('StripeService test cases', () => {
     }
   });
 
-  it('should return the same instance of StripeBridge', () => {
+  it('should return the same instance of StripeBridge (singleton)', () => {
     const instance1 = StripeService.getInstance();
     const instance2 = StripeService.getInstance();
     expect(instance1).to.equal(instance2);
