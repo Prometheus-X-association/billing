@@ -5,17 +5,6 @@ import mongoose from 'mongoose';
 import { config } from '../../src/config/environment';
 
 import BillingSubscriptionSyncService from '../../src/services/BillingSubscriptionSyncService';
-// bypass BillingSubscriptionSyncService connect method
-const syncConnect = Reflect.get(
-  BillingSubscriptionSyncService.prototype,
-  'connect',
-);
-Reflect.set(
-  BillingSubscriptionSyncService.prototype,
-  'connect',
-  function (_mongoUri: string | undefined) {},
-);
-
 import { getApp } from '../../src/app';
 import http from 'http';
 import { _logYellow, _logGreen, _logObject } from '../utils/utils';
@@ -25,38 +14,46 @@ let server: http.Server;
 let mongoServer: MongoMemoryServer;
 
 describe('Billing Subscription Sync Service via API', () => {
-  before(function () {
+  let syncConnect: Function;
+  before(async function () {
     this.timeout(10000);
-    return (async () => {
-      mongoServer = await MongoMemoryServer.create();
-      const mongoUri = mongoServer.getUri();
-      await mongoose.connect(mongoUri);
-      config.mongoURI = mongoUri;
+    // bypass BillingSubscriptionSyncService connect method
+    syncConnect = Reflect.get(
+      BillingSubscriptionSyncService.prototype,
+      'connect',
+    );
+    Reflect.set(
+      BillingSubscriptionSyncService.prototype,
+      'connect',
+      function (_mongoUri: string | undefined) {},
+    );
 
-      const app = await getApp();
-      await new Promise((resolve) => {
-        const { port } = config;
-        server = app.listen(port, () => {
-          console.log(`Test server is running on port ${port}`);
-          resolve(true);
-        });
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    await mongoose.connect(mongoUri);
+    config.mongoURI = mongoUri;
+
+    const app = await getApp();
+    await new Promise((resolve) => {
+      const { port } = config;
+      server = app.listen(port, () => {
+        console.log(`Test server is running on port ${port}`);
+        resolve(true);
       });
-    })();
+    });
   });
 
-  after(function () {
-    return (async () => {
-      await mongoose.disconnect();
-      await mongoServer.stop();
-      server.close();
-      Reflect.set(
-        BillingSubscriptionSyncService.prototype,
-        'connect',
-        syncConnect,
-      );
-    })();
+  after(async () => {
+    await mongoose.disconnect();
+    await mongoServer.stop();
+    server.close();
+    Reflect.set(
+      BillingSubscriptionSyncService.prototype,
+      'connect',
+      syncConnect,
+    );
   });
-  /*
+
   it('should add subscriptions', async () => {
     _logYellow('\n- Add Subscriptions');
     const subscriptions = [
@@ -138,5 +135,4 @@ describe('Billing Subscription Sync Service via API', () => {
     expect(response.status).to.equal(404);
     expect(response.body.message).to.equal('Subscription not found');
   });
-  */
 });

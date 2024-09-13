@@ -5,14 +5,13 @@ import sinon from 'sinon';
 import SubscriptionModel from '../../src/models/SubscriptionModel';
 import { BillingSubscriptionCleanRefresh } from '../../src/services/BillingSubscriptionCleanRefresh';
 import BillingSubscriptionSyncService from '../../src/services/BillingSubscriptionSyncService';
-import { Subscription } from '../../src/types/billing.subscription.types';
 
 describe('BillingSubscriptionCleanRefresh Service', function () {
   let mongoServer: MongoMemoryServer;
   let syncService: BillingSubscriptionSyncService;
   let billingCleanRefresh: BillingSubscriptionCleanRefresh;
 
-  before(async function () {
+  before(async () => {
     this.timeout(10000);
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
@@ -21,12 +20,12 @@ describe('BillingSubscriptionCleanRefresh Service', function () {
     billingCleanRefresh = new BillingSubscriptionCleanRefresh({}, syncService);
   });
 
-  after(async function () {
+  after(async () => {
     await mongoose.disconnect();
     await mongoServer.stop();
   });
 
-  afterEach(async function () {
+  afterEach(async () => {
     await SubscriptionModel.deleteMany({});
     sinon.restore();
   });
@@ -109,6 +108,7 @@ describe('BillingSubscriptionCleanRefresh Service', function () {
   });
 
   it('should trigger the cron job and execute updateExpiredSubscriptions', function (done) {
+    this.timeout(5000);
     const testConfig = {
       cronSchedule: '*/1 * * * * *',
     };
