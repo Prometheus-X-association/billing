@@ -7,6 +7,7 @@ import {
   SubscriptionType,
 } from '../types/billing.subscription.types';
 import BillingSubscriptionSyncService from './BillingSubscriptionSyncService';
+import SubscriptionModel from '../models/SubscriptionModel';
 
 class StripeService {
   private static instance: StripeService;
@@ -96,7 +97,16 @@ class StripeService {
     subscription: Stripe.Subscription,
   ): Promise<void> {
     try {
-      const subscriptionId = ''; // Todo: get sub Id
+      const billingSubscription = await SubscriptionModel.findOne(
+        { stripeId: subscription.id },
+        { _id: 1 },
+      );
+      if (!billingSubscription) {
+        throw new Error(
+          `Subscription with stripeId ${subscription.id} not found in the database.`,
+        );
+      }
+      const subscriptionId = billingSubscription._id.toString();
       if (subscriptionId) {
         const sync =
           await BillingSubscriptionSyncService.retrieveServiceInstance();
@@ -121,7 +131,7 @@ class StripeService {
     try {
       const formattedSubs: Subscription[] = [];
       const formattedSub: Subscription | null =
-        await this.getAndFormatSubscription(subscription.id);
+        await this.formatStripeSubscription(subscription.id);
 
       if (formattedSub) {
         formattedSubs.push(formattedSub);
@@ -142,7 +152,7 @@ class StripeService {
     }
   }
 
-  public async getSubscription(
+  public async getStripeSubscription(
     subscriptionId: string,
   ): Promise<Stripe.Subscription | null> {
     try {
@@ -188,11 +198,11 @@ class StripeService {
     return 'payAmount'; // Tmp
   }
 
-  public async getAndFormatSubscription(
+  public async formatStripeSubscription(
     subscriptionId: string,
   ): Promise<Subscription | null> {
     const subscription: Stripe.Subscription | null =
-      await this.getSubscription(subscriptionId);
+      await this.getStripeSubscription(subscriptionId);
     if (subscription) {
       const isActive = subscription.status === 'active';
       const participantId = await this.getParticipantId(subscription.customer);
