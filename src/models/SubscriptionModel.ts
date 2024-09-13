@@ -59,6 +59,7 @@ const SubscriptionDetailSchema = new Schema(
 
 const SubscriptionSchema = new Schema({
   isActive: { type: Boolean, required: true },
+  stripeId: { type: String },
   participantId: { type: String, required: true },
   subscriptionType: {
     type: String,

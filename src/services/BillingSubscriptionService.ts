@@ -6,7 +6,7 @@ class BillingSubscriptionService {
 
   public contructor() {}
 
-  public static getService(): BillingSubscriptionService {
+  public static retrieveServiceInstance(): BillingSubscriptionService {
     if (!BillingSubscriptionService.instance) {
       BillingSubscriptionService.instance = new BillingSubscriptionService();
     }
@@ -141,10 +141,12 @@ class BillingSubscriptionService {
 
     if (activeSubscriptions.length > 0) {
       const subscription = activeSubscriptions[0];
-      return {
-        subscriptionId: subscription._id,
-        usageCount: subscription.details.usageCount ?? 0,
-      };
+      if (subscription._id) {
+        return {
+          subscriptionId: subscription._id,
+          usageCount: subscription.details.usageCount ?? 0,
+        };
+      }
     }
     return undefined;
   }
@@ -178,10 +180,12 @@ class BillingSubscriptionService {
 
     if (activeSubscriptions.length > 0) {
       const subscription = activeSubscriptions[0];
-      return {
-        subscriptionId: subscription._id,
-        payAmount: subscription.details.payAmount ?? 0,
-      };
+      if (subscription._id) {
+        return {
+          subscriptionId: subscription._id,
+          payAmount: subscription.details.payAmount ?? 0,
+        };
+      }
     }
     return undefined;
   }
@@ -220,10 +224,12 @@ class BillingSubscriptionService {
 
     if (activeSubscriptions.length > 0) {
       const subscription = activeSubscriptions[0];
-      return {
-        subscriptionId: subscription._id,
-        limitDate: subscription.details.limitDate!,
-      };
+      if (subscription._id) {
+        return {
+          subscriptionId: subscription._id,
+          limitDate: subscription.details.limitDate!,
+        };
+      }
     }
     return undefined;
   }
@@ -252,10 +258,12 @@ class BillingSubscriptionService {
         sub.details.endDate > now &&
         (sub.details.usageCount ?? 0) > 0,
     );
-    return activeSubscriptions.map((sub) => ({
-      subscriptionId: sub._id,
-      usageCount: sub.details.usageCount ?? 0,
-    }));
+    return activeSubscriptions
+      .filter((sub) => sub._id != null)
+      .map((sub) => ({
+        subscriptionId: sub._id!.toString(),
+        usageCount: sub.details.usageCount ?? 0,
+      }));
   }
 
   /**
@@ -282,10 +290,12 @@ class BillingSubscriptionService {
         sub.details.endDate > now &&
         (sub.details.payAmount ?? 0) > 0,
     );
-    return activeSubscriptions.map((sub) => ({
-      subscriptionId: sub._id,
-      payAmount: sub.details.payAmount ?? 0,
-    }));
+    return activeSubscriptions
+      .filter((sub) => sub._id != null)
+      .map((sub) => ({
+        subscriptionId: sub._id!.toString(),
+        payAmount: sub.details.payAmount ?? 0,
+      }));
   }
 
   /**
@@ -310,10 +320,12 @@ class BillingSubscriptionService {
       (sub) =>
         sub.isActive && sub.details.limitDate && sub.details.limitDate > now,
     );
-    return activeSubscriptions.map((sub) => ({
-      subscriptionId: sub._id,
-      limitDate: sub.details.limitDate?.getTime() ?? 0,
-    }));
+    return activeSubscriptions
+      .filter((sub) => sub._id != null)
+      .map((sub) => ({
+        subscriptionId: sub._id!.toString(),
+        limitDate: sub.details.limitDate?.getTime() ?? 0,
+      }));
   }
 
   /**

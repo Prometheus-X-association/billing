@@ -4,7 +4,9 @@ import { Logger } from '../libs/Logger';
 import {
   Subscription,
   SubscriptionDetail,
+  SubscriptionType,
 } from '../types/billing.subscription.types';
+import BillingSubscriptionSyncService from './BillingSubscriptionSyncService';
 
 class StripeService {
   private static instance: StripeService;
@@ -34,7 +36,7 @@ class StripeService {
     return new Stripe(secret);
   }
 
-  public static getInstance(): StripeService {
+  public static retrieveServiceInstance(): StripeService {
     if (!StripeService.instance) {
       StripeService.instance = new StripeService();
     }
@@ -67,11 +69,15 @@ class StripeService {
       if (!this.stripe) {
         throw new Error('Stripe instance is not initialized.');
       }
+      const subscription = event.data.object as Stripe.Subscription;
       switch (event.type) {
-        case 'customer.subscription.created':
         case 'customer.subscription.updated':
+          // Todo
+          break;
         case 'customer.subscription.deleted':
-          const subscription = event.data.object as Stripe.Subscription;
+          await this.unregisterSubscription(subscription);
+          break;
+        case 'customer.subscription.created':
           await this.registerSubscription(subscription);
           break;
         default:
@@ -86,14 +92,53 @@ class StripeService {
     }
   }
 
+  private async unregisterSubscription(
+    subscription: Stripe.Subscription,
+  ): Promise<void> {
+    try {
+      const subscriptionId = ''; // Todo: get sub Id
+      if (subscriptionId) {
+        const sync =
+          await BillingSubscriptionSyncService.retrieveServiceInstance();
+        await sync.removeSubscription(subscriptionId);
+      } else {
+        throw new Error(
+          "Can't unregister subscription: Subscription ID is missing or invalid.",
+        );
+      }
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error unregistering subscription ${subscription.id}: ${err.message}`,
+      });
+    }
+  }
+
   private async registerSubscription(
     subscription: Stripe.Subscription,
   ): Promise<void> {
-    const formattedSubscription = await this.getAndFormatSubscription(
-      subscription.id,
-    );
-    if (formattedSubscription) {
-      // Todo: use sync service to register subscription
+    try {
+      const formattedSubs: Subscription[] = [];
+      const formattedSub: Subscription | null =
+        await this.getAndFormatSubscription(subscription.id);
+
+      if (formattedSub) {
+        formattedSubs.push(formattedSub);
+        const sync =
+          await BillingSubscriptionSyncService.retrieveServiceInstance();
+        await sync.addSubscriptions(formattedSubs);
+      } else {
+        throw new Error(
+          "Can't register subscription: Subscription not found or invalid.",
+        );
+      }
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error registering subscription ${subscription.id}: ${err.message}`,
+      });
     }
   }
 
@@ -138,6 +183,11 @@ class StripeService {
     throw new Error('Unable to retrieve customer ID');
   }
 
+  private getBillingType(subscription: Stripe.Subscription): SubscriptionType {
+    // Todo: get/build the corresponding billing type
+    return 'payAmount'; // Tmp
+  }
+
   public async getAndFormatSubscription(
     subscriptionId: string,
   ): Promise<Subscription | null> {
@@ -146,9 +196,10 @@ class StripeService {
     if (subscription) {
       const isActive = subscription.status === 'active';
       const participantId = await this.getParticipantId(subscription.customer);
-      const subscriptionType = 'payAmount'; // Todo
+      const subscriptionType = this.getBillingType(subscription);
+      const stripeId = subscription.id;
       return {
-        _id: '',
+        stripeId,
         isActive,
         participantId,
         subscriptionType,

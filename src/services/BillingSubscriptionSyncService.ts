@@ -19,10 +19,12 @@ class BillingSubscriptionSyncService {
 
   constructor() {}
 
-  public static async getService(): Promise<BillingSubscriptionSyncService> {
+  public static async retrieveServiceInstance(): Promise<BillingSubscriptionSyncService> {
     if (!BillingSubscriptionSyncService.instance) {
       const instance = new BillingSubscriptionSyncService();
-      instance.setBillingService(BillingSubscriptionService.getService());
+      instance.setBillingService(
+        BillingSubscriptionService.retrieveServiceInstance(),
+      );
       await instance.connect(config.mongoURI);
       await instance.sync();
       BillingSubscriptionSyncService.instance = instance;
@@ -58,6 +60,7 @@ class BillingSubscriptionSyncService {
     this.billingService.clean();
     this.sync();
   }
+
   private async sync() {
     try {
       await this.loadSubscriptions();
@@ -132,28 +135,53 @@ class BillingSubscriptionSyncService {
     changeHandler.registerCallback(
       'insert',
       async (change: ChangeStreamDocument): Promise<void> => {
-        this.handleInsert(change as ChangeStreamInsertDocument);
+        try {
+          this.handleInsert(change as ChangeStreamInsertDocument);
+        } catch (error) {
+          Logger.error({
+            message: `Error handling insert: ${(error as Error).message}`,
+            location: (error as Error).stack,
+          });
+        }
       },
     );
     changeHandler.registerCallback(
       'delete',
       async (change: ChangeStreamDocument): Promise<void> => {
-        this.handleDelete(change as ChangeStreamDeleteDocument);
+        try {
+          this.handleDelete(change as ChangeStreamDeleteDocument);
+        } catch (error) {
+          Logger.error({
+            message: `Error handling delete: ${(error as Error).message}`,
+            location: (error as Error).stack,
+          });
+        }
       },
     );
   }
 
   private handleInsert(change: ChangeStreamInsertDocument) {
     if (this.billingService) {
-      const _id = (change.fullDocument as Subscription)._id.toString();
-      this.billingService.addSubscription({
-        ...(change.fullDocument as Subscription),
-        _id,
-      });
-      Logger.log({
-        message: `Syncing in-memory cache after subscription insertion: ${_id}`,
-      });
+      const subscription: Subscription = change.fullDocument as Subscription;
+      if (subscription._id) {
+        const _id = subscription._id.toString();
+        this.billingService.addSubscription({
+          ...subscription,
+          _id,
+        });
+        Logger.log({
+          message: `Syncing in-memory cache after subscription insertion: ${_id}`,
+        });
+      } else {
+        Logger.error({
+          message: 'Subscription ID is missing or invalid',
+        });
+        throw new Error('Subscription ID is missing or invalid');
+      }
     } else {
+      Logger.error({
+        message: 'Billing service is not set',
+      });
       throw new Error('Billing service is not set');
     }
   }

@@ -8,7 +8,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
     return res.status(400).send('Missing "Stripe-Signature" header');
   }
   try {
-    const stripeService = StripeService.getInstance();
+    const stripeService = StripeService.retrieveServiceInstance();
     const stripe = stripeService.getStripe();
     if (!stripe) {
       throw new Error('Stripe instance is not initialized.');

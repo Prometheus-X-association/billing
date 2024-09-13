@@ -29,7 +29,7 @@ describe('StripeService test cases', () => {
   });
 
   it('should create a new customer and return the customer ID', async () => {
-    const stripeService = StripeService.getInstance();
+    const stripeService = StripeService.retrieveServiceInstance();
     const customer = await stripeService.connect(email);
     expect(customer).to.not.be.null;
     expect(
@@ -43,8 +43,8 @@ describe('StripeService test cases', () => {
   });
 
   it('should return the same instance of StripeBridge (singleton)', () => {
-    const instance1 = StripeService.getInstance();
-    const instance2 = StripeService.getInstance();
+    const instance1 = StripeService.retrieveServiceInstance();
+    const instance2 = StripeService.retrieveServiceInstance();
     expect(instance1).to.equal(instance2);
   });
 });

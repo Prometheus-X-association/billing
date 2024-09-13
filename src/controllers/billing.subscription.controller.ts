@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import SubscriptionService from '../services/BillingSubscriptionService';
 
-const BillingSubscriptionService = SubscriptionService.getService();
+const BillingSubscriptionService =
+  SubscriptionService.retrieveServiceInstance();
 
 export const getParticipantSubscriptions = (req: Request, res: Response) => {
   try {

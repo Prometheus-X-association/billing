@@ -3,7 +3,8 @@ import BillingSubscriptionSyncService from '../services/BillingSubscriptionSyncS
 
 export const addSubscriptions = async (req: Request, res: Response) => {
   try {
-    const service = await BillingSubscriptionSyncService.getService();
+    const service =
+      await BillingSubscriptionSyncService.retrieveServiceInstance();
     if (!service) {
       return res.status(500).json({ message: 'Service unavailable' });
     }
@@ -22,7 +23,8 @@ export const addSubscriptions = async (req: Request, res: Response) => {
 
 export const removeSubscription = async (req: Request, res: Response) => {
   try {
-    const service = await BillingSubscriptionSyncService.getService();
+    const service =
+      await BillingSubscriptionSyncService.retrieveServiceInstance();
     if (!service) {
       return res.status(500).json({ message: 'Service unavailable' });
     }

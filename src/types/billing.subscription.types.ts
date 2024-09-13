@@ -31,7 +31,8 @@ export interface SubscriptionDetail {
 }
 
 export interface Subscription {
-  _id: string;
+  _id?: string;
+  stripeId?: string;
   isActive: boolean;
   participantId: string;
   subscriptionType: SubscriptionType;

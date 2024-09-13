@@ -16,19 +16,24 @@ describe('Subscription Sync Service', function () {
   let subscriptionService: BillingSubscriptionService;
   let syncService: BillingSubscriptionSyncService;
 
-  before(async function () {
-    this.timeout(10000);
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    subscriptionService = new BillingSubscriptionService();
-    syncService = new BillingSubscriptionSyncService();
-    await syncService.connect(mongoUri);
-    syncService.setBillingService(subscriptionService);
+  before(function () {
+    return (async () => {
+      this.timeout(10000);
+      mongoServer = await MongoMemoryServer.create();
+      const mongoUri = mongoServer.getUri();
+      subscriptionService = new BillingSubscriptionService();
+      syncService = new BillingSubscriptionSyncService();
+      await syncService.connect(mongoUri);
+      syncService.setBillingService(subscriptionService);
+      await syncService.refresh();
+    })();
   });
 
-  after(async function () {
-    await mongoose.disconnect();
-    await mongoServer.stop();
+  after(function () {
+    return (async () => {
+      await mongoose.disconnect();
+      await mongoServer.stop();
+    })();
   });
 
   it('should load subscriptions via sync service and verify them in billing service', async function () {

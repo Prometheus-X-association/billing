@@ -6,7 +6,7 @@ describe('Billing Subscription Service', () => {
   let billingService: BillingSubscriptionService;
 
   before(() => {
-    billingService = BillingSubscriptionService.getService();
+    billingService = BillingSubscriptionService.retrieveServiceInstance();
     const now = new Date();
     const startDate = new Date(now.getTime() - 86400000); // 1 day in the past
     const futureDate = new Date(now.getTime() + 86400000); // 1 day in the future
