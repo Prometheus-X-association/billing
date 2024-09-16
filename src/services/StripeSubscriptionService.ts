@@ -8,6 +8,7 @@ import {
 } from '../types/billing.subscription.types';
 import BillingSubscriptionSyncService from './BillingSubscriptionSyncService';
 import SubscriptionModel from '../models/SubscriptionModel';
+import CustomerParticipantMap from '../models/CustomerParticipantMap';
 
 class StripeService {
   private static instance: StripeService;
@@ -132,7 +133,6 @@ class StripeService {
       const formattedSubs: Subscription[] = [];
       const formattedSub: Subscription | null =
         await this.formatStripeSubscription(subscription.id);
-
       if (formattedSub) {
         formattedSubs.push(formattedSub);
         const sync =
@@ -172,19 +172,82 @@ class StripeService {
     }
   }
 
-  private async getRelatedParticipantId(customerId: string): Promise<string> {
-    // Todo: get corresponding participant Id
-    return customerId; // Tmp
+  public async linkParticipantToCustomer(
+    participantId: string,
+    customerId: string,
+  ): Promise<void> {
+    try {
+      const existingMapping = await CustomerParticipantMap.findOne({
+        customerId,
+      });
+
+      if (existingMapping) {
+        throw new Error(
+          `A mapping for customerId ${customerId} already exists.`,
+        );
+      }
+      const newMapping = new CustomerParticipantMap({
+        participantId,
+        customerId,
+      });
+      await newMapping.save();
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error linking participantId ${participantId} to customerId ${customerId}: ${err.message}`,
+      });
+      throw error;
+    }
   }
+
+  public async unlinkParticipantFromCustomer(
+    customerId: string,
+  ): Promise<void> {
+    try {
+      const result = await CustomerParticipantMap.findOneAndDelete({
+        customerId,
+      });
+
+      if (!result) {
+        throw new Error(`No mapping found for customerId: ${customerId}`);
+      }
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error unlinking customerId ${customerId}: ${err.message}`,
+      });
+      throw error;
+    }
+  }
+
+  private async getRelatedParticipantId(customerId: string): Promise<string> {
+    try {
+      const mapping = await CustomerParticipantMap.findOne({ customerId });
+      if (!mapping) {
+        throw new Error(`No participant found for customerId: ${customerId}`);
+      }
+      return mapping.participantId;
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error fetching participantId for customerId ${customerId}: ${err.message}`,
+      });
+      throw error;
+    }
+  }
+
   private async getParticipantId(
     customer: string | Stripe.Customer | Stripe.DeletedCustomer,
   ): Promise<string> {
     let customerId: string | null = null;
     if (typeof customer === 'string') {
       customerId = customer;
-    } else if ('deleted' in customer && customer.deleted === true) {
+    } else if (customer && 'deleted' in customer && customer.deleted === true) {
       throw new Error('Customer has been deleted');
-    } else if ('id' in customer) {
+    } else if (customer && 'id' in customer) {
       customerId = customer.id;
     }
     if (customerId) {
@@ -208,6 +271,8 @@ class StripeService {
       const participantId = await this.getParticipantId(subscription.customer);
       const subscriptionType = this.getBillingType(subscription);
       const stripeId = subscription.id;
+      const startDate = new Date(subscription.current_period_start * 1000);
+      const endDate = new Date(subscription.current_period_end * 1000);
       return {
         stripeId,
         isActive,
@@ -215,7 +280,10 @@ class StripeService {
         subscriptionType,
         resourceId: '', // Todo
         resourceIds: [], // Todo
-        details: {} as SubscriptionDetail, // Todo
+        details: {
+          startDate,
+          endDate,
+        } as SubscriptionDetail, // Todo
       };
     }
     return null;
