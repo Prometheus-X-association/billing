@@ -15,6 +15,10 @@ class StripeSubscriptionCrudService {
     }
   }
 
+  public getStripe() {
+    return this.stripeService;
+  }
+
   public static retrieveServiceInstance(): StripeSubscriptionCrudService {
     if (!StripeSubscriptionCrudService.instance) {
       StripeSubscriptionCrudService.instance =
@@ -41,6 +45,23 @@ class StripeSubscriptionCrudService {
       Logger.error({
         location: err.stack,
         message: `Error creating subscription: ${err.message}`,
+      });
+      return null;
+    }
+  }
+
+  public async listSubscriptions(): Promise<Stripe.Subscription[] | null> {
+    try {
+      if (!this.stripeService) {
+        throw new Error('Stripe instance is not initialized.');
+      }
+      const subscriptions = await this.stripeService.subscriptions.list();
+      return subscriptions.data;
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error retrieving subscriptions: ${err.message}`,
       });
       return null;
     }

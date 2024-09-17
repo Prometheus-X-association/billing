@@ -34,6 +34,27 @@ export const createSubscription = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllSubscriptions = async (req: Request, res: Response) => {
+  try {
+    const stripeCrudService =
+      StripeSubscriptionCrudService.retrieveServiceInstance();
+    const subscriptions = await stripeCrudService.listSubscriptions();
+
+    if (subscriptions && subscriptions.length > 0) {
+      return res.status(200).json(subscriptions);
+    } else {
+      return res.status(404).json({ message: 'No subscriptions found.' });
+    }
+  } catch (error) {
+    const err = error as Error;
+    Logger.error({
+      location: err.stack,
+      message: `Error retrieving subscriptions: ${err.message}`,
+    });
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 export const getSubscription = async (req: Request, res: Response) => {
   const { subscriptionId } = req.params;
   try {

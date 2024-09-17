@@ -10,24 +10,126 @@ const stripeSubscriptionService =
 
 let server: http.Server;
 
-const createTestSubscriptions = async () => {
-  await stripeSubscriptionService.createSubscription(
-    'cus_test_1',
-    'price_test_1',
-  );
-  await stripeSubscriptionService.createSubscription(
-    'cus_test_2',
-    'price_test_2',
-  );
-  await stripeSubscriptionService.createSubscription(
-    'cus_test_3',
-    'price_test_3',
-  );
+let testCustomer1: string;
+let testCustomer2: string;
+let testPrice1: string | undefined;
+let testPrice2: string | undefined;
+let paymentMethod1: string | undefined;
+
+const productId1 = 'prod_test_1';
+const productId2 = 'prod_test_2';
+
+const ensureCustomerExists = async (email: string, name: string) => {
+  const existingCustomers = await stripeSubscriptionService
+    .getStripe()
+    ?.customers.list({ email });
+
+  if (existingCustomers && existingCustomers.data.length > 0) {
+    return existingCustomers.data[0].id;
+  }
+
+  const newCustomer = await stripeSubscriptionService
+    .getStripe()
+    ?.customers.create({ email, name });
+
+  return newCustomer?.id;
+};
+
+const ensurePaymentMethodExists = async (customerId: string) => {
+  const paymentMethods = await stripeSubscriptionService
+    .getStripe()
+    ?.paymentMethods.list({
+      customer: customerId,
+      type: 'card',
+    });
+
+  if (paymentMethods?.data.length) {
+    return paymentMethods.data[0].id;
+  }
+
+  const newPaymentMethod = await stripeSubscriptionService
+    .getStripe()
+    ?.paymentMethods.create({
+      type: 'card',
+      card: {
+        token: 'tok_visa',
+      },
+    });
+
+  await stripeSubscriptionService
+    .getStripe()
+    ?.paymentMethods.attach(newPaymentMethod?.id as string, {
+      customer: customerId,
+    });
+
+  await stripeSubscriptionService.getStripe()?.customers.update(customerId, {
+    invoice_settings: { default_payment_method: newPaymentMethod?.id },
+  });
+
+  return newPaymentMethod?.id;
+};
+
+const ensureProductExists = async (productId: string) => {
+  try {
+    const product = await stripeSubscriptionService
+      .getStripe()
+      ?.products.retrieve(productId);
+    return product?.id;
+  } catch (error: any) {
+    if (error.raw?.type === 'invalid_request_error') {
+      const product = await stripeSubscriptionService
+        .getStripe()
+        ?.products.create({
+          id: productId,
+          name: `Test Product for ${productId}`,
+        });
+      return product?.id;
+    }
+    throw error;
+  }
+};
+
+const ensurePriceExists = async (priceId: string, productId: string) => {
+  try {
+    const price = await stripeSubscriptionService
+      .getStripe()
+      ?.prices.retrieve(priceId);
+    return price?.id;
+  } catch (error: any) {
+    if (error.raw?.type === 'invalid_request_error') {
+      const price = await stripeSubscriptionService.getStripe()?.prices.create({
+        unit_amount: 1000,
+        currency: 'usd',
+        recurring: {
+          interval: 'month',
+        },
+        product: productId,
+      });
+      return price?.id;
+    }
+    throw error;
+  }
 };
 
 describe('Stripe Subscription CRUD API', () => {
   before(async function () {
-    await createTestSubscriptions();
+    testCustomer1 = (await ensureCustomerExists(
+      'test_customer_1@example.com',
+      'Test Customer 1',
+    )) as string;
+    testCustomer2 = (await ensureCustomerExists(
+      'test_customer_2@example.com',
+      'Test Customer 2',
+    )) as string;
+
+    paymentMethod1 = await ensurePaymentMethodExists(testCustomer1);
+
+    await ensureProductExists(productId1);
+    await ensureProductExists(productId2);
+
+    testPrice1 = await ensurePriceExists('price_test_1', productId1);
+    testPrice2 = await ensurePriceExists('price_test_2', productId2);
+
     const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;
@@ -42,45 +144,59 @@ describe('Stripe Subscription CRUD API', () => {
     server.close();
   });
 
-  it('should create a new subscription', async () => {
-    const response = await supertest(server).post('/api/subscriptions').send({
-      customerId: 'cus_test_3',
-      priceId: 'price_test_3',
-    });
+  let testSubscriptionId: string;
 
+  it('should create a new subscription for a customer', async () => {
+    const response = await supertest(server)
+      .post('/api/stripe/subscriptions')
+      .send({
+        customerId: testCustomer1,
+        priceId: testPrice1,
+      });
     expect(response.status).to.equal(201);
     expect(response.body).to.have.property('id');
     expect(response.body).to.have.property('customer');
-    expect(response.body.customer).to.equal('cus_test_3');
+    expect(response.body.customer).to.equal(testCustomer1);
+    testSubscriptionId = response.body.id;
   });
 
   it('should retrieve an existing subscription by ID', async () => {
     const response = await supertest(server).get(
-      '/api/subscriptions/sub_test_1',
+      `/api/stripe/subscriptions/${testSubscriptionId}`,
     );
-
     expect(response.status).to.equal(200);
-    expect(response.body).to.have.property('id', 'sub_test_1');
-    expect(response.body).to.have.property('customerId');
+    expect(response.body).to.have.property('id', testSubscriptionId);
+    expect(response.body).to.have.property('customer');
+    expect(response.body.customer).to.equal(testCustomer1);
   });
 
   it('should update an existing subscription', async () => {
     const response = await supertest(server)
-      .put('/api/subscriptions/sub_test_1')
+      .put(`/api/stripe/subscriptions/${testSubscriptionId}`)
       .send({
         metadata: { key: 'value' },
       });
-
     expect(response.status).to.equal(200);
-    expect(response.body).to.have.property('id', 'sub_test_1');
+    expect(response.body).to.have.property('id', testSubscriptionId);
     expect(response.body).to.have.property('metadata').eql({ key: 'value' });
+  });
+
+  it('should get all subscriptions', async () => {
+    const response = await supertest(server).get('/api/stripe/subscriptions');
+    expect(response.status).to.equal(200);
+    expect(response.body).to.be.an('array');
+    console.log(response.body);
+    const subscription = response.body.find(
+      (sub: any) => sub.id === testSubscriptionId,
+    );
+    expect(subscription).to.exist;
+    expect(subscription.customer).to.equal(testCustomer1);
   });
 
   it('should cancel an existing subscription', async () => {
     const response = await supertest(server).delete(
-      '/api/subscriptions/sub_test_1',
+      `/api/stripe/subscriptions/${testSubscriptionId}`,
     );
-
     expect(response.status).to.equal(200);
     expect(response.body).to.have.property(
       'message',
@@ -90,17 +206,12 @@ describe('Stripe Subscription CRUD API', () => {
 
   it('should return a 404 for a non-existent subscription', async () => {
     const response = await supertest(server).get(
-      '/api/subscriptions/non_existent_id',
+      '/api/stripe/subscriptions/non_existent_id',
     );
-
     expect(response.status).to.equal(404);
-    expect(response.body).to.have.property('error', 'Subscription not found');
-  });
-
-  it('should get all subscriptions', async () => {
-    const response = await supertest(server).get('/api/subscriptions');
-
-    expect(response.status).to.equal(200);
-    expect(response.body).to.be.an('array').with.lengthOf(1);
+    expect(response.body).to.have.property(
+      'message',
+      'Subscription not found.',
+    );
   });
 });
