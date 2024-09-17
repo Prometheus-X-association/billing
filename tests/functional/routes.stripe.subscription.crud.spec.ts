@@ -4,6 +4,7 @@ import { config } from '../../src/config/environment';
 import http from 'http';
 import StripeSubscriptionCrudService from '../../src/services/StripeSubscriptionCrudService';
 import { getApp } from '../../src/app';
+import { Logger } from '../../src/libs/Logger';
 
 const stripeSubscriptionService =
   StripeSubscriptionCrudService.retrieveServiceInstance();
@@ -11,13 +12,10 @@ const stripeSubscriptionService =
 let server: http.Server;
 
 let testCustomer1: string;
-let testCustomer2: string;
 let testPrice1: string | undefined;
-let testPrice2: string | undefined;
 let paymentMethod1: string | undefined;
 
 const productId1 = 'prod_test_1';
-const productId2 = 'prod_test_2';
 
 const ensureCustomerExists = async (email: string, name: string) => {
   const existingCustomers = await stripeSubscriptionService
@@ -27,11 +25,9 @@ const ensureCustomerExists = async (email: string, name: string) => {
   if (existingCustomers && existingCustomers.data.length > 0) {
     return existingCustomers.data[0].id;
   }
-
   const newCustomer = await stripeSubscriptionService
     .getStripe()
     ?.customers.create({ email, name });
-
   return newCustomer?.id;
 };
 
@@ -46,7 +42,6 @@ const ensurePaymentMethodExists = async (customerId: string) => {
   if (paymentMethods?.data.length) {
     return paymentMethods.data[0].id;
   }
-
   const newPaymentMethod = await stripeSubscriptionService
     .getStripe()
     ?.paymentMethods.create({
@@ -61,11 +56,9 @@ const ensurePaymentMethodExists = async (customerId: string) => {
     ?.paymentMethods.attach(newPaymentMethod?.id as string, {
       customer: customerId,
     });
-
   await stripeSubscriptionService.getStripe()?.customers.update(customerId, {
     invoice_settings: { default_payment_method: newPaymentMethod?.id },
   });
-
   return newPaymentMethod?.id;
 };
 
@@ -117,19 +110,10 @@ describe('Stripe Subscription CRUD API', () => {
       'test_customer_1@example.com',
       'Test Customer 1',
     )) as string;
-    testCustomer2 = (await ensureCustomerExists(
-      'test_customer_2@example.com',
-      'Test Customer 2',
-    )) as string;
 
     paymentMethod1 = await ensurePaymentMethodExists(testCustomer1);
-
     await ensureProductExists(productId1);
-    await ensureProductExists(productId2);
-
     testPrice1 = await ensurePriceExists('price_test_1', productId1);
-    testPrice2 = await ensurePriceExists('price_test_2', productId2);
-
     const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;
@@ -141,7 +125,24 @@ describe('Stripe Subscription CRUD API', () => {
   });
 
   after(async () => {
-    server.close();
+    try {
+      const subscriptions = await stripeSubscriptionService.listSubscriptions();
+      if (subscriptions) {
+        for (const subscription of subscriptions) {
+          if (subscription.customer === testCustomer1) {
+            await stripeSubscriptionService.cancelSubscription(subscription.id);
+          }
+        }
+      }
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error during after hook: ${err.message}`,
+      });
+    } finally {
+      server.close();
+    }
   });
 
   let testSubscriptionId: string;
@@ -185,7 +186,6 @@ describe('Stripe Subscription CRUD API', () => {
     const response = await supertest(server).get('/api/stripe/subscriptions');
     expect(response.status).to.equal(200);
     expect(response.body).to.be.an('array');
-    console.log(response.body);
     const subscription = response.body.find(
       (sub: any) => sub.id === testSubscriptionId,
     );
