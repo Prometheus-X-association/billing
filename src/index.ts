@@ -5,7 +5,8 @@ import { IncomingMessage, Server, ServerResponse } from 'http';
 import BillingSubscriptionSyncService from './services/BillingSubscriptionSyncService';
 import { Logger } from './libs/Logger';
 import { BillingSubscriptionCleanRefresh } from './services/BillingSubscriptionCleanRefresh';
-import StripeService from './services/StripeSubscriptionService';
+import StripeSubscriptionSyncService from './services/StripeSubscriptionSyncService';
+import StripeSubscriptionCrudService from './services/StripeSubscriptionCrudService';
 
 type AppServer = {
   app: express.Application;
@@ -18,8 +19,9 @@ export const main = async (): Promise<AppServer> => {
   // Init sync service on server start
   const syncService =
     await BillingSubscriptionSyncService.retrieveServiceInstance();
-  // Init stripe service on server start
-  StripeService.retrieveServiceInstance();
+  // Init stripe services on server start
+  StripeSubscriptionSyncService.retrieveServiceInstance();
+  StripeSubscriptionCrudService.retrieveServiceInstance();
   // Init cleaner service on server start
   const cleanerService = new BillingSubscriptionCleanRefresh({}, syncService);
   cleanerService.start();

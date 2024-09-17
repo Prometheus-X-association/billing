@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { config } from '../config/environment';
-import StripeService from '../services/StripeSubscriptionService';
+import StripeService from '../services/StripeSubscriptionSyncService';
 
 export const handleStripeWebhook = async (req: Request, res: Response) => {
   const sig = req.get('stripe-signature');

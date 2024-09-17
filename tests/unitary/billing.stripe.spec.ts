@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Stripe from 'stripe';
-import StripeService from '../../src/services/StripeSubscriptionService';
+import StripeService from '../../src/services/StripeSubscriptionSyncService';
 import BillingSubscriptionSyncService from '../../src/services/BillingSubscriptionSyncService';
 import { Subscription } from '../../src/types/billing.subscription.types';
 import { MongoMemoryServer } from 'mongodb-memory-server';

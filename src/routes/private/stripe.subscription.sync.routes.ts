@@ -3,7 +3,7 @@ import {
   handleStripeWebhook,
   linkParticipantToCustomer,
   unlinkParticipantFromCustomer,
-} from '../../controllers/stripe.subscription.controller';
+} from '../../controllers/stripe.subscription.sync.controller';
 
 const router = Router();
 
