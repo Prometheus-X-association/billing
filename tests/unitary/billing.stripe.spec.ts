@@ -81,93 +81,97 @@ describe('StripeService test cases', () => {
     expect(instance1).to.equal(instance2);
   });
 
-  const subscriptionId = 'test_subscription_id';
-  it('should handle "customer.subscription.created" event and call addSubscriptions in BillingSubscriptionSyncService', async () => {
-    let billingSubscriptionSyncServiceStub: sinon.SinonStub = sinon
-      .stub(BillingSubscriptionSyncService.prototype, 'addSubscriptions')
-      .resolves();
-
-    const now = new Date();
-    const startDate = new Date(now.getTime() - 86400000); // 1 day ago
-    const endDate = new Date(now.getTime() - 1000); // 1 second ago
-
-    const current_period_start = Math.floor(startDate.getTime() / 1000);
-    const current_period_end = Math.floor(endDate.getTime() / 1000);
-
-    const startDateFromTimestamp = new Date(current_period_start * 1000);
-    const endDateFromTimestamp = new Date(current_period_end * 1000);
-
+  {
+    const subscriptionId = 'test_subscription_id';
     const participantId = 'test_participant_id';
     const customerId = 'test_customer_id';
-    const fakeSubscription = {
-      stripeId: subscriptionId,
-      isActive: true,
-      participantId,
-      subscriptionType: 'payAmount',
-      resourceId: '',
-      resourceIds: [],
-      details: {
-        startDate: startDateFromTimestamp,
-        endDate: endDateFromTimestamp,
-      },
-    } as unknown as Subscription;
+    it('should handle "customer.subscription.created" event and call addSubscriptions in BillingSubscriptionSyncService', async () => {
+      let billingSubscriptionSyncServiceStub: sinon.SinonStub = sinon
+        .stub(BillingSubscriptionSyncService.prototype, 'addSubscriptions')
+        .resolves();
 
-    const mockStripeSubscription = {
-      id: subscriptionId,
-      status: 'active',
-      customer: customerId,
-      current_period_start,
-      current_period_end,
-    };
+      const now = new Date();
+      const startDate = new Date(now.getTime() - 86400000); // 1 day ago
+      const endDate = new Date(now.getTime() - 1000); // 1 second ago
 
-    stripeService.linkParticipantToCustomer(participantId, customerId);
+      const current_period_start = Math.floor(startDate.getTime() / 1000);
+      const current_period_end = Math.floor(endDate.getTime() / 1000);
 
-    stripeStub.subscriptions.retrieve
-      .withArgs(subscriptionId)
-      .returns(Promise.resolve(mockStripeSubscription));
+      const startDateFromTimestamp = new Date(current_period_start * 1000);
+      const endDateFromTimestamp = new Date(current_period_end * 1000);
 
-    const event = {
-      type: 'customer.subscription.created',
-      data: {
-        object: { id: subscriptionId },
-      },
-    } as Stripe.Event;
+      const fakeSubscription = {
+        stripeId: subscriptionId,
+        isActive: true,
+        participantId,
+        subscriptionType: 'payAmount',
+        resourceId: '',
+        resourceIds: [],
+        details: {
+          startDate: startDateFromTimestamp,
+          endDate: endDateFromTimestamp,
+        },
+      } as unknown as Subscription;
 
-    await stripeService.handleWebhook(event);
-    expect(billingSubscriptionSyncServiceStub.calledOnce).to.be.true;
-    expect(
-      billingSubscriptionSyncServiceStub.calledWithExactly([fakeSubscription]),
-    ).to.be.true;
-    billingSubscriptionSyncServiceStub.restore();
+      const mockStripeSubscription = {
+        id: subscriptionId,
+        status: 'active',
+        customer: customerId,
+        current_period_start,
+        current_period_end,
+      };
 
-    const billingSyncServiceInstance =
-      await BillingSubscriptionSyncService.retrieveServiceInstance();
-    subscriptions = await billingSyncServiceInstance.addSubscriptions([
-      fakeSubscription,
-    ]);
-  });
+      stripeService.linkParticipantToCustomer(participantId, customerId);
 
-  it('should handle "customer.subscription.deleted" event and call removeSubscription from sync service', async () => {
-    const removeSubscriptionStub = sinon
-      .stub(BillingSubscriptionService.prototype, 'removeSubscriptionById')
-      .resolves();
+      stripeStub.subscriptions.retrieve
+        .withArgs(subscriptionId)
+        .returns(Promise.resolve(mockStripeSubscription));
 
-    const event = {
-      type: 'customer.subscription.deleted',
-      data: {
-        object: { id: subscriptionId },
-      },
-    } as Stripe.Event;
+      const event = {
+        type: 'customer.subscription.created',
+        data: {
+          object: { id: subscriptionId },
+        },
+      } as Stripe.Event;
 
-    await stripeService.handleWebhook(event);
-    expect(removeSubscriptionStub.calledOnce).to.be.true;
+      await stripeService.handleWebhook(event);
+      expect(billingSubscriptionSyncServiceStub.calledOnce).to.be.true;
+      expect(
+        billingSubscriptionSyncServiceStub.calledWithExactly([
+          fakeSubscription,
+        ]),
+      ).to.be.true;
+      billingSubscriptionSyncServiceStub.restore();
 
-    const ids = subscriptions.map((sub) => sub.id);
-    expect(
-      removeSubscriptionStub.calledWithExactly(ids[0]) ||
-        ids.some((id) => removeSubscriptionStub.calledWithExactly(id)),
-    ).to.be.true;
+      const billingSyncServiceInstance =
+        await BillingSubscriptionSyncService.retrieveServiceInstance();
+      subscriptions = await billingSyncServiceInstance.addSubscriptions([
+        fakeSubscription,
+      ]);
+    });
 
-    removeSubscriptionStub.restore();
-  });
+    it('should handle "customer.subscription.deleted" event and call removeSubscription from sync service', async () => {
+      const removeSubscriptionStub = sinon
+        .stub(BillingSubscriptionService.prototype, 'removeSubscriptionById')
+        .resolves();
+
+      const event = {
+        type: 'customer.subscription.deleted',
+        data: {
+          object: { id: subscriptionId },
+        },
+      } as Stripe.Event;
+
+      await stripeService.handleWebhook(event);
+      expect(removeSubscriptionStub.calledOnce).to.be.true;
+      const ids = subscriptions.map((sub) => sub.id);
+      expect(
+        removeSubscriptionStub.calledWithExactly(ids[0]) ||
+          ids.some((id) => removeSubscriptionStub.calledWithExactly(id)),
+      ).to.be.true;
+      removeSubscriptionStub.restore();
+
+      stripeService.unlinkParticipantFromCustomer(customerId);
+    });
+  }
 });

@@ -212,6 +212,9 @@ class StripeService {
       if (!result) {
         throw new Error(`No mapping found for customerId: ${customerId}`);
       }
+      Logger.log({
+        message: `Participant has been unlinked from customer ${customerId}`,
+      });
     } catch (error) {
       const err = error as Error;
       Logger.error({
