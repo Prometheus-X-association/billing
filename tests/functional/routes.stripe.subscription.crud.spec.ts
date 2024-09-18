@@ -4,7 +4,6 @@ import { config } from '../../src/config/environment';
 import http from 'http';
 import StripeSubscriptionCrudService from '../../src/services/StripeSubscriptionCrudService';
 import { getApp } from '../../src/app';
-import { Logger } from '../../src/libs/Logger';
 
 const stripeSubscriptionService =
   StripeSubscriptionCrudService.retrieveServiceInstance();
@@ -136,10 +135,7 @@ describe('Stripe Subscription CRUD API', () => {
       }
     } catch (error) {
       const err = error as Error;
-      Logger.error({
-        location: err.stack,
-        message: `Error during after hook: ${err.message}`,
-      });
+      console.error(`Error during after hook: ${err.message}`);
     } finally {
       server.close();
     }
