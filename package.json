@@ -1,13 +1,15 @@
 {
-  "name": "billing",
-  "version": "1.0.0",
+  "name": "PTX Billing Component",
+  "version": "1.1.0",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
     "dev": "nodemon -- --development",
     "start": "node ./dist/index.js --production",
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
-    "test": "mocha --require ts-node/register --exit ./tests/**/*.spec.ts --test"
+    "test:unitary": "npx ts-mocha -p tsconfig.json tests/unitary/*.spec.ts --timeout 4000 --exit --test",
+    "test:functional": "npx ts-mocha -p tsconfig.json tests/functional/*.spec.ts --timeout 4000 --exit --test",
+    "test": "pnpm test:unitary && pnpm test:functional"
   },
   "keywords": [],
   "author": "",
