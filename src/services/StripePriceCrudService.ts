@@ -22,6 +22,10 @@ class StripePriceCrudService {
     return StripePriceCrudService.instance;
   }
 
+  public getStripe() {
+    return this.stripeService;
+  }
+
   public async createPrice(
     priceData: Stripe.PriceCreateParams,
   ): Promise<Stripe.Price | null> {

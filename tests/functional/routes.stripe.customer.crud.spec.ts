@@ -4,6 +4,7 @@ import { config } from '../../src/config/environment';
 import http from 'http';
 import StripeCustomerCrudService from '../../src/services/StripeCustomerCrudService';
 import { getApp } from '../../src/app';
+import { _logYellow } from '../utils/utils';
 
 const stripeCustomerService =
   StripeCustomerCrudService.retrieveServiceInstance();
@@ -12,8 +13,11 @@ let server: http.Server;
 
 let testCustomerId: string;
 
-describe('Stripe Customer CRUD API', () => {
+describe('Stripe Customer CRUD API', function () {
+  const title = this.title;
   before(async function () {
+    _logYellow(`- ${title} running...`);
+
     const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;

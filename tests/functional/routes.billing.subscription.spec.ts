@@ -11,8 +11,11 @@ const billingSubscriptionService =
   BillingSubscriptionService.retrieveServiceInstance();
 
 let server: http.Server;
-describe('Billing Subscription via API', () => {
+describe('Billing Subscription via API', function () {
+  const title = this.title;
   before(async function () {
+    _logYellow(`- ${title} running...`);
+
     billingSubscriptionService.addSubscription([
       {
         _id: '_id_1',

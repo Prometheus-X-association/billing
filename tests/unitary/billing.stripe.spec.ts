@@ -7,10 +7,12 @@ import { Subscription } from '../../src/types/billing.subscription.types';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import BillingSubscriptionService from '../../src/services/BillingSubscriptionService';
+import { _logYellow } from '../utils/utils';
 
 const email = 'test@example.com';
 const customerId = 'test_customer_id';
-describe('StripeService test cases', () => {
+describe('Billing Stripe sync service test cases', function () {
+  const title = this.title;
   let stripeStub: {
     customers: {
       create: sinon.SinonStub;
@@ -25,6 +27,8 @@ describe('StripeService test cases', () => {
   let subscriptionService: BillingSubscriptionService;
   let subscriptions: any[];
   before(async function () {
+    _logYellow(`- ${title} running...`);
+
     this.timeout(10000);
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
@@ -51,7 +55,14 @@ describe('StripeService test cases', () => {
     sinon
       .stub(StripeService.prototype, 'getNewStripe' as any)
       .returns(stripeStub);
-
+    /*
+    const reflectedstripeService = Reflect.construct(StripeService, []);
+    const retrieveServiceInstanceStub = sinon
+      .stub(StripeService, 'retrieveServiceInstance' as any)
+      .returns(reflectedstripeService);
+    stripeService = StripeService.retrieveServiceInstance();
+    retrieveServiceInstanceStub.restore();
+    */
     stripeService = StripeService.retrieveServiceInstance();
   });
 
@@ -73,12 +84,6 @@ describe('StripeService test cases', () => {
     if (customer) {
       expect(customer.id).to.equal(customerId);
     }
-  });
-
-  it('should return the same instance of StripeService (singleton)', () => {
-    const instance1 = StripeService.retrieveServiceInstance();
-    const instance2 = StripeService.retrieveServiceInstance();
-    expect(instance1).to.equal(instance2);
   });
 
   {

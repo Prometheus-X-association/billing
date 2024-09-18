@@ -5,13 +5,16 @@ import sinon from 'sinon';
 import SubscriptionModel from '../../src/models/SubscriptionModel';
 import { BillingSubscriptionCleanRefresh } from '../../src/services/BillingSubscriptionCleanRefresh';
 import BillingSubscriptionSyncService from '../../src/services/BillingSubscriptionSyncService';
+import { _logYellow } from '../utils/utils';
 
 describe('BillingSubscriptionCleanRefresh Service', function () {
+  const title = this.title;
   let mongoServer: MongoMemoryServer;
   let syncService: BillingSubscriptionSyncService;
   let billingCleanRefresh: BillingSubscriptionCleanRefresh;
 
   before(async () => {
+    _logYellow(`- ${title} running...`);
     this.timeout(10000);
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();

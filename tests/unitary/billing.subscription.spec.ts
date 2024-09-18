@@ -1,11 +1,14 @@
 import { expect } from 'chai';
 import BillingSubscriptionService from '../../src/services/BillingSubscriptionService';
 import { Subscription } from '../../src/types/billing.subscription.types';
+import { _logYellow } from '../utils/utils';
 
-describe('Billing Subscription Service', () => {
+describe('Billing Subscription Service', function () {
+  const title = this.title;
   let billingService: BillingSubscriptionService;
 
   before(() => {
+    _logYellow(`- ${title} running...`);
     billingService = BillingSubscriptionService.retrieveServiceInstance();
     const now = new Date();
     const startDate = new Date(now.getTime() - 86400000); // 1 day in the past

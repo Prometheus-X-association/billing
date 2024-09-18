@@ -13,9 +13,12 @@ import SubscriptionModel from '../../src/models/SubscriptionModel';
 let server: http.Server;
 let mongoServer: MongoMemoryServer;
 
-describe('Billing Subscription Sync Service via API', () => {
+describe('Billing Subscription Sync Service via API', function () {
+  const title = this.title;
   let syncConnect: Function;
   before(async function () {
+    _logYellow(`- ${title} running...`);
+
     this.timeout(10000);
     // bypass BillingSubscriptionSyncService connect method
     syncConnect = Reflect.get(

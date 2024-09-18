@@ -9,14 +9,17 @@ import {
   Subscription,
   SubscriptionType,
 } from '../../src/types/billing.subscription.types';
+import { _logYellow } from '../utils/utils';
 
 describe('Subscription Sync Service', function () {
+  const title = this.title;
   const now = new Date();
   let mongoServer: MongoMemoryServer;
   let subscriptionService: BillingSubscriptionService;
   let syncService: BillingSubscriptionSyncService;
 
   before(async function () {
+    _logYellow(`- ${title} running...`);
     this.timeout(10000);
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();

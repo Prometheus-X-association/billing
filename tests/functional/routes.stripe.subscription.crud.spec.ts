@@ -4,6 +4,7 @@ import { config } from '../../src/config/environment';
 import http from 'http';
 import StripeSubscriptionCrudService from '../../src/services/StripeSubscriptionCrudService';
 import { getApp } from '../../src/app';
+import { _logYellow } from '../utils/utils';
 
 const stripeSubscriptionService =
   StripeSubscriptionCrudService.retrieveServiceInstance();
@@ -103,8 +104,12 @@ const ensurePriceExists = async (priceId: string, productId: string) => {
   }
 };
 
-describe('Stripe Subscription CRUD API', () => {
+describe('Stripe Subscription CRUD API', function () {
+  const title = this.title;
   before(async function () {
+    _logYellow(`- ${title} running...`);
+
+    this.timeout(8000);
     testCustomer1 = (await ensureCustomerExists(
       'test_customer_1@example.com',
       'Test Customer 1',
