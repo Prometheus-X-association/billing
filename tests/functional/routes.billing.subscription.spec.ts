@@ -66,7 +66,7 @@ describe('Billing Subscription via API', function () {
 
   after(async () => {
     // Ensure to disconnect BillingSubscriptionSyncService started by the server
-    (
+    await (
       await BillingSubscriptionSyncService.retrieveServiceInstance()
     ).disconnect();
     server.close();

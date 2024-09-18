@@ -7,17 +7,11 @@ import {
 } from 'mongodb';
 
 export type ChangeHandlerCallback = (
-  change: ChangeStreamDocument,
+  _change: ChangeStreamDocument,
 ) => Promise<void>;
 
 interface Subscription extends Omit<BaseSubscription, '_id'> {
   _id: Types.ObjectId;
-}
-
-interface SubscriptionDocument
-  extends Omit<Document, 'collection'>,
-    Subscription {
-  collection: Collection;
 }
 
 class ChangeHandler {

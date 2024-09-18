@@ -13,7 +13,6 @@ let server: http.Server;
 
 let testCustomer1: string;
 let testPrice1: string | undefined;
-let paymentMethod1: string | undefined;
 
 const productId1 = 'prod_test_1';
 
@@ -115,7 +114,7 @@ describe('Stripe Subscription CRUD API', function () {
       'Test Customer 1',
     )) as string;
 
-    paymentMethod1 = await ensurePaymentMethodExists(testCustomer1);
+    await ensurePaymentMethodExists(testCustomer1);
     await ensureProductExists(productId1);
     testPrice1 = await ensurePriceExists('price_test_1', productId1);
     const app = await getApp();

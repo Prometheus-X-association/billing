@@ -32,17 +32,13 @@ const ensureProductExists = async (productId: string) => {
 };
 
 const ensurePriceExists = async (productId: string) => {
-  try {
-    const price = await stripePriceService.getStripe()?.prices.create({
-      unit_amount: 1000,
-      currency: 'usd',
-      recurring: { interval: 'month' },
-      product: productId,
-    });
-    return price?.id;
-  } catch (error) {
-    throw error;
-  }
+  const price = await stripePriceService.getStripe()?.prices.create({
+    unit_amount: 1000,
+    currency: 'usd',
+    recurring: { interval: 'month' },
+    product: productId,
+  });
+  return price?.id;
 };
 
 describe('Stripe Price CRUD API', function () {

@@ -24,7 +24,7 @@ export const main = async (): Promise<AppServer> => {
   StripeSubscriptionCrudService.retrieveServiceInstance();
   // Init cleaner service on server start
   const cleanerService = new BillingSubscriptionCleanRefresh({}, syncService);
-  cleanerService.start();
+  await cleanerService.start();
   const server = app.listen(port, () => {
     Logger.log({
       message: `Server running on: http://localhost: ${port}`,

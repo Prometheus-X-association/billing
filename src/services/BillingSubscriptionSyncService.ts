@@ -58,7 +58,7 @@ class BillingSubscriptionSyncService {
       return;
     }
     this.billingService.clean();
-    this.sync();
+    await this.sync();
   }
 
   private async sync() {

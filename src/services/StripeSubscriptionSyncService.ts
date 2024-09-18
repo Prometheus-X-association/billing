@@ -259,6 +259,7 @@ class StripeService {
     throw new Error('Unable to retrieve customer ID');
   }
 
+  // eslint-disable-next-line no-unused-vars
   private getBillingType(subscription: Stripe.Subscription): SubscriptionType {
     // Todo: get/build the corresponding billing type
     return 'payAmount'; // Tmp

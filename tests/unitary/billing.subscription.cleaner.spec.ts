@@ -110,7 +110,7 @@ describe('BillingSubscriptionCleanRefresh Service', function () {
     expect(updatedSubscriptions[1].isActive).to.be.true;
   });
 
-  it('should trigger the cron job and execute updateExpiredSubscriptions', function (done) {
+  it('should trigger the cron job and execute updateExpiredSubscriptions', async function (done) {
     this.timeout(5000);
     const testConfig = {
       cronSchedule: '*/1 * * * * *',
@@ -125,7 +125,7 @@ describe('BillingSubscriptionCleanRefresh Service', function () {
       .stub(billingCleanRefresh as any, 'updateExpiredSubscriptions')
       .resolves();
 
-    billingCleanRefresh.start();
+    await billingCleanRefresh.start();
 
     setTimeout(() => {
       expect(updateStub.calledOnce).to.be.true;

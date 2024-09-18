@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { config } from '../config/environment';
 import StripeService from '../services/StripeSubscriptionSyncService';
+import { Logger } from '../libs/Logger';
 
 export const handleStripeWebhook = async (req: Request, res: Response) => {
   const sig = req.get('stripe-signature');
@@ -25,7 +26,10 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
     res.json({ received: true });
   } catch (err) {
     const error = err as Error;
-    console.error(error);
+    Logger.error({
+      location: error.stack,
+      message: error.message,
+    });
     res.status(400).send(`Webhook Error: ${error.message}`);
   }
 };
