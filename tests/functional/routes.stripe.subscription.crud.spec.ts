@@ -90,7 +90,7 @@ const ensurePriceExists = async (priceId: string, productId: string) => {
   } catch (error: any) {
     if (error.raw?.type === 'invalid_request_error') {
       const price = await stripeSubscriptionService.getStripe()?.prices.create({
-        unit_amount: 1000,
+        unit_amount: 1,
         currency: 'usd',
         recurring: {
           interval: 'month',

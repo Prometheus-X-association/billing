@@ -6,7 +6,8 @@ import stripeCrudCustomer from './stripe.customer.crud.routes';
 import stripeCrudProduct from './stripe.product.crud.routes';
 import stripeCrudPrice from './stripe.price.crud.routes';
 import stripeSyncSubscription from './stripe.subscription.sync.routes';
-
+import stripeCrudAccount from './stripe.connected.account.crud.routes';
+import stripeCrudPaymentIntent from './stripe.payment.intent.crud.routes';
 const routers = [
   {
     prefix: '/',
@@ -35,6 +36,14 @@ const routers = [
   {
     prefix: '/stripe/',
     router: stripeCrudProduct,
+  },
+  {
+    prefix: '/stripe/',
+    router: stripeCrudAccount,
+  },
+  {
+    prefix: '/stripe/',
+    router: stripeCrudPaymentIntent,
   },
 ];
 export default {
