@@ -11,7 +11,7 @@ const router = Router();
 
 /**
  * @swagger
- * /prices:
+ * /api/stripe/prices:
  *   post:
  *     summary: Create a new price
  *     description: Create a new price for a product in Stripe.
@@ -56,7 +56,7 @@ router.post('/prices', createPrice);
 
 /**
  * @swagger
- * /prices:
+ * /api/stripe/prices:
  *   get:
  *     summary: Get all prices
  *     description: Retrieve a list of all prices.
@@ -79,7 +79,7 @@ router.get('/prices', getAllPrices);
 
 /**
  * @swagger
- * /prices/{priceId}:
+ * /api/stripe/prices/{priceId}:
  *   get:
  *     summary: Get a specific price
  *     description: Retrieve a price by its ID.
@@ -107,7 +107,7 @@ router.get('/prices/:priceId', getPrice);
 
 /**
  * @swagger
- * /prices/{priceId}:
+ * /api/stripe/prices/{priceId}:
  *   put:
  *     summary: Update a price
  *     description: Update the details of an existing price.
@@ -146,7 +146,7 @@ router.put('/prices/:priceId', updatePrice);
 
 /**
  * @swagger
- * /prices/{priceId}:
+ * /api/stripe/prices/{priceId}:
  *   delete:
  *     summary: Deactivate a price
  *     description: Deactivate a specific price by setting its active status to false.

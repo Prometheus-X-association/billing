@@ -19,7 +19,7 @@ const router = Router();
 
 /**
  * @swagger
- * /subscriptions/for/participant/{participantId}:
+ * /api/subscriptions/for/participant/{participantId}:
  *   get:
  *     summary: Get subscriptions for a participant
  *     description: Retrieve all subscriptions for a specific participant.
@@ -51,7 +51,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get subscriptions for a participant's resource
  *     description: Retrieve all subscriptions for a participant's specific resource.
@@ -89,7 +89,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/limitdate/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/limitdate/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get limitDate subscriptions for a resource
  *     description: Retrieve all subscriptions of type limitDate for a participant's resource.
@@ -127,7 +127,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/pay/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/pay/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get payAmount subscriptions for a resource
  *     description: Retrieve all subscriptions of type payAmount for a participant's resource.
@@ -165,7 +165,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/usage/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/usage/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get usageCount subscriptions for a resource
  *     description: Retrieve all subscriptions of type usageCount for a participant's resource.
@@ -203,7 +203,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/lastactive/usage/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/lastactive/usage/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get last active usageCount subscription for a resource
  *     description: Retrieve the last active usageCount subscription for a participant's resource.
@@ -244,7 +244,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/lastactive/pay/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/lastactive/pay/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get last active payAmount subscription for a resource
  *     description: Retrieve the last active payAmount subscription for a participant's resource.
@@ -285,7 +285,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/lastactive/limitdate/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/lastactive/limitdate/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get last active limitDate subscription for a resource
  *     description: Retrieve the last active limitDate subscription for a participant's resource.
@@ -327,7 +327,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/validactive/usage/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/validactive/usage/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get valid active usageCount subscriptions for a resource
  *     description: Retrieve all valid active usageCount subscriptions for a participant's resource.
@@ -370,7 +370,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/validactive/pay/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/validactive/pay/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get valid active payAmount subscriptions for a resource
  *     description: Retrieve all valid active payAmount subscriptions for a participant's resource.
@@ -413,7 +413,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/validactive/limitdate/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/validactive/limitdate/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Get valid active limitDate subscriptions for a resource
  *     description: Retrieve all valid active limitDate subscriptions for a participant's resource.
@@ -457,7 +457,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions/hasactive/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/hasactive/for/resource/{participantId}/{resourceId}:
  *   get:
  *     summary: Check if a participant has an active subscription for a specific resource
  *     description: Verifies if a participant has an active subscription for a given resource by their IDs.
@@ -498,7 +498,7 @@ router.get(
 
 /**
  * @swagger
- * /subscriptions:
+ * /api/subscriptions:
  *   get:
  *     summary: Get all subscriptions
  *     description: Retrieves a list of all subscriptions.

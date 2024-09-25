@@ -4,17 +4,18 @@ import { config } from '../../src/config/environment';
 import http from 'http';
 import { getApp } from '../../src/app';
 import { _logYellow } from '../utils/utils';
-import StripePaymentIntentCrudService from '../../src/services/StripePaymentIntentCrudService';
 import sinon from 'sinon';
 import Stripe from 'stripe';
+import StripeService from '../../src/services/StripeSubscriptionSyncService';
 
 let server: http.Server;
 let testPaymentIntentId: string;
 const testStripeAccountId: string = 'acct_50726F6D6574686575732058';
 const fakePaymentMethodId = 'pm_50726F6D6574686575732058';
+
 describe('Stripe Payment Intent API', function () {
   const title = this.title;
-  let stripePaymentIntentServiceStub: sinon.SinonStubbedInstance<StripePaymentIntentCrudService>;
+  let stripeStub: Stripe;
 
   before(async function () {
     _logYellow(`- ${title} running...`);
@@ -28,12 +29,20 @@ describe('Stripe Payment Intent API', function () {
       });
     });
 
-    stripePaymentIntentServiceStub = sinon.createStubInstance(
-      StripePaymentIntentCrudService,
-    );
+    stripeStub = {
+      paymentIntents: {
+        create: sinon.stub(),
+        retrieve: sinon.stub(),
+        update: sinon.stub(),
+        confirm: sinon.stub(),
+      },
+    } as unknown as Stripe;
+
+    const stripeServiceStub = sinon.createStubInstance(StripeService);
+    stripeServiceStub.getStripe.returns(stripeStub);
     sinon
-      .stub(StripePaymentIntentCrudService, 'retrieveServiceInstance')
-      .returns(stripePaymentIntentServiceStub as any);
+      .stub(StripeService, 'retrieveServiceInstance')
+      .returns(stripeServiceStub as any);
   });
 
   after(() => {
@@ -47,7 +56,7 @@ describe('Stripe Payment Intent API', function () {
       amount: 2,
       currency: 'usd',
     };
-    stripePaymentIntentServiceStub.createPaymentIntent.resolves(
+    (stripeStub.paymentIntents.create as sinon.SinonStub).resolves(
       fakePaymentIntent as Stripe.PaymentIntent,
     );
 
@@ -73,7 +82,7 @@ describe('Stripe Payment Intent API', function () {
       amount: 2,
       currency: 'usd',
     };
-    stripePaymentIntentServiceStub.getPaymentIntent.resolves(
+    (stripeStub.paymentIntents.retrieve as sinon.SinonStub).resolves(
       fakePaymentIntent as Stripe.PaymentIntent,
     );
 
@@ -93,7 +102,7 @@ describe('Stripe Payment Intent API', function () {
       amount: 3,
       currency: 'usd',
     };
-    stripePaymentIntentServiceStub.updatePaymentIntent.resolves(
+    (stripeStub.paymentIntents.update as sinon.SinonStub).resolves(
       fakeUpdatedPaymentIntent as Stripe.PaymentIntent,
     );
 
@@ -114,7 +123,7 @@ describe('Stripe Payment Intent API', function () {
       id: testPaymentIntentId,
       status: 'succeeded',
     };
-    stripePaymentIntentServiceStub.confirmPaymentIntent.resolves(
+    (stripeStub.paymentIntents.confirm as sinon.SinonStub).resolves(
       fakeConfirmedPaymentIntent as Stripe.PaymentIntent,
     );
 
@@ -131,7 +140,9 @@ describe('Stripe Payment Intent API', function () {
   });
 
   it('should return a 404 for a non-existent payment intent', async () => {
-    stripePaymentIntentServiceStub.getPaymentIntent.resolves(null);
+    (stripeStub.paymentIntents.retrieve as sinon.SinonStub).rejects(
+      new Error('Payment intent not found'),
+    );
 
     const response = await supertest(server)
       .get('/api/stripe/payment_intents/non_existent_id')

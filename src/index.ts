@@ -33,4 +33,5 @@ export const main = async (): Promise<AppServer> => {
   return { app, server };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 main();

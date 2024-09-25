@@ -8,7 +8,7 @@ const router = Router();
 
 /**
  * @swagger
- * /subscriptions:
+ * /api/sync/subscriptions:
  *   post:
  *     summary: Add a list of subscriptions
  *     description: Adds multiple subscriptions to the database. Expects an array of subscription objects in the request body.
@@ -148,7 +148,7 @@ router.post('/subscriptions', addSubscriptions);
 
 /**
  * @swagger
- * /subscriptions/{subscriptionId}:
+ * /api/sync/subscriptions/{subscriptionId}:
  *   delete:
  *     summary: Remove a subscription
  *     description: Deletes a subscription from the database based on the provided subscription ID.
