@@ -27,13 +27,22 @@ class StripePriceCrudService {
   }
 
   public async createPrice(
-    priceData: Stripe.PriceCreateParams,
+    priceData: Stripe.PriceCreateParams & {connectedAccountId?: string},
   ): Promise<Stripe.Price | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const price = await this.stripeService.prices.create(priceData);
+      if(!priceData.connectedAccountId){
+        throw new Error('connectedAccountId body params is needed.');
+      }
+
+      const stripeAccount = priceData.connectedAccountId;
+
+      if(priceData.connectedAccountId){
+        delete priceData.connectedAccountId;
+      }
+      const price = await this.stripeService.prices.create(priceData, {stripeAccount});
       return price;
     } catch (error) {
       const err = error as Error;

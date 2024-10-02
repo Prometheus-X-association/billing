@@ -26,7 +26,16 @@ const router = Router();
  *             properties:
  *               type:
  *                 type: string
- *                 description: The type of the connected account.
+ *                 description: The type of the connected account, can be custom, express or standard.
+ *               country:
+ *                 type: string
+ *                 description: ISO 3166-1 alpha-2 country code.
+ *               email:
+ *                 type: string
+ *                 description: The email address of the account holder.
+ *               account_token:
+ *                 type: string
+ *                 description: An account token , used to securely provide details to the account.
  *     responses:
  *       201:
  *         description: Successfully created a new connected account.

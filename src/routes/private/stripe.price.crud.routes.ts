@@ -42,6 +42,10 @@ const router = Router();
  *                 type: string
  *                 description: ID of the product associated with the price.
  *                 example: prod_test_1
+ *               connectedAccountId:
+ *                 type: string
+ *                 description: ID of the connected account associated with the product.
+ *                 example: acct_0000
  *     responses:
  *       201:
  *         description: Price created successfully.

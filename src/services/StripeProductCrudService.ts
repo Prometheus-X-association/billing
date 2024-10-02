@@ -1,5 +1,5 @@
 import StripeService from './StripeSubscriptionSyncService';
-import { Logger } from '../libs/Logger';
+import {Logger} from '../libs/Logger';
 import Stripe from 'stripe';
 
 class StripeProductCrudService {
@@ -22,15 +22,19 @@ class StripeProductCrudService {
     return StripeProductCrudService.instance;
   }
 
-  public async createProduct(
-    productData: Stripe.ProductCreateParams,
-  ): Promise<Stripe.Product | null> {
+  public async createProduct(props: {
+    productData: Stripe.ProductCreateParams;
+    stripeAccount: string;
+  }): Promise<Stripe.Product | null> {
+    const productData = props.productData;
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const product = await this.stripeService.products.create(productData);
-      return product;
+
+      return await this.stripeService.products.create(productData, {
+        stripeAccount: props.stripeAccount
+      });
     } catch (error) {
       const err = error as Error;
       Logger.error({

@@ -4,15 +4,17 @@ import { Logger } from '../libs/Logger';
 
 export const createSubscription = async (req: Request, res: Response) => {
   const { customerId, priceId } = req.body;
-  if (!customerId || !priceId) {
+  const stripeAccount = req.headers['stripe-account'] as string
+  if (!customerId || !priceId || !stripeAccount) {
     return res
       .status(400)
-      .json({ message: 'customerId and priceId are required' });
+      .json({ message: 'customerId, connectedAccountId and priceId are required' });
   }
   try {
     const stripeCrudService =
       StripeSubscriptionCrudService.retrieveServiceInstance();
     const newSubscription = await stripeCrudService.createSubscription(
+      stripeAccount,
       customerId,
       priceId,
     );

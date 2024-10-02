@@ -9,6 +9,7 @@ import {
 import BillingSubscriptionSyncService from './BillingSubscriptionSyncService';
 import SubscriptionModel from '../models/SubscriptionModel';
 import CustomerParticipantMap from '../models/CustomerParticipantMap';
+import ConnectedAccountParticipantMap from "../models/ConnectedAccountParticipantMap";
 
 class StripeService {
   private static instance: StripeService;
@@ -201,6 +202,36 @@ class StripeService {
     }
   }
 
+  public async linkParticipantToConnectedAccount(
+    participantId: string,
+    connectedAccountId: string,
+  ): Promise<typeof ConnectedAccountParticipantMap> {
+    try {
+      const existingMapping = await ConnectedAccountParticipantMap.findOne({
+        connectedAccountId,
+      });
+
+      if (existingMapping) {
+        throw new Error(
+          `A mapping for connectedAccountId ${connectedAccountId} already exists.`,
+        );
+      }
+      const newMapping = new ConnectedAccountParticipantMap({
+        participantId,
+        connectedAccountId,
+      });
+      await newMapping.save();
+      return newMapping.toObject();
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error linking participantId ${participantId} to connectedAccountId ${connectedAccountId}: ${err.message}`,
+      });
+      throw error;
+    }
+  }
+
   public async unlinkParticipantFromCustomer(
     customerId: string,
   ): Promise<void> {
@@ -220,6 +251,30 @@ class StripeService {
       Logger.error({
         location: err.stack,
         message: `Error unlinking customerId ${customerId}: ${err.message}`,
+      });
+      throw error;
+    }
+  }
+
+  public async unlinkParticipantFromConnectedAccount(
+      connectedAccountId: string,
+  ): Promise<void> {
+    try {
+      const result = await ConnectedAccountParticipantMap.findOneAndDelete({
+        connectedAccountId,
+      });
+
+      if (!result) {
+        throw new Error(`No mapping found for connectedAccountId: ${connectedAccountId}`);
+      }
+      Logger.log({
+        message: `Participant has been unlinked from connected account ${connectedAccountId}`,
+      });
+    } catch (error) {
+      const err = error as Error;
+      Logger.error({
+        location: err.stack,
+        message: `Error unlinking connectedAccountId ${connectedAccountId}: ${err.message}`,
       });
       throw error;
     }

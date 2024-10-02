@@ -15,6 +15,12 @@ const router = Router();
  *   post:
  *     summary: Create a new subscription
  *     description: Creates a subscription for a customer using their customerId and priceId.
+ *     parameters:
+ *      - name: stripe-account
+ *        in: header
+ *        description: stripe account
+ *        required: true
+ *        type: string
  *     requestBody:
  *       required: true
  *       content:

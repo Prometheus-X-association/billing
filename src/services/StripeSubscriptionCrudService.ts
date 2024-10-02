@@ -28,6 +28,7 @@ class StripeSubscriptionCrudService {
   }
 
   public async createSubscription(
+    stripeAccount: string,
     customerId: string,
     priceId: string,
   ): Promise<Stripe.Subscription | null> {
@@ -35,11 +36,12 @@ class StripeSubscriptionCrudService {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const subscription = await this.stripeService.subscriptions.create({
+      return await this.stripeService.subscriptions.create({
         customer: customerId,
-        items: [{ price: priceId }],
+        items: [{price: priceId}],
+      }, {
+        stripeAccount
       });
-      return subscription;
     } catch (error) {
       const err = error as Error;
       Logger.error({
@@ -117,9 +119,7 @@ class StripeSubscriptionCrudService {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const canceledSubscription =
-        await this.stripeService.subscriptions.cancel(subscriptionId);
-      return canceledSubscription;
+      return await this.stripeService.subscriptions.cancel(subscriptionId);
     } catch (error) {
       const err = error as Error;
       Logger.error({

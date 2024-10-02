@@ -56,6 +56,28 @@ export const linkParticipantToCustomer = async (
   }
 };
 
+export const linkParticipantToConnectedAccount = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { participantId, connectedAccountId } = req.body;
+
+    if (!participantId || !connectedAccountId) {
+      return res
+        .status(400)
+        .json({ message: 'participantId and connectedAccountId are required' });
+    }
+    const stripeService = StripeService.retrieveServiceInstance();
+    const mapping = await stripeService.linkParticipantToConnectedAccount(participantId, connectedAccountId);
+    res.status(200).json(mapping);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error linking participant to customer', error });
+  }
+};
+
 export const unlinkParticipantFromCustomer = async (
   req: Request,
   res: Response,
@@ -72,5 +94,24 @@ export const unlinkParticipantFromCustomer = async (
     res
       .status(500)
       .json({ message: 'Error unlinking participant from customer', error });
+  }
+};
+
+export const unlinkParticipantFromConnectedAccount = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { connectedAccountId } = req.params;
+    if (!connectedAccountId) {
+      return res.status(400).json({ message: 'connectedAccountId is required' });
+    }
+    const stripeService = StripeService.retrieveServiceInstance();
+    await stripeService.unlinkParticipantFromConnectedAccount(connectedAccountId);
+    res.status(200).json({ message: 'Link removed successfully' });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error unlinking participant from connected account', error });
   }
 };

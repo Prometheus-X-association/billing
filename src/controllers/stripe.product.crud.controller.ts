@@ -6,7 +6,11 @@ export const createProduct = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeProductCrudService.retrieveServiceInstance();
-    const newProduct = await stripeCrudService.createProduct(req.body);
+
+    const newProduct = await stripeCrudService.createProduct({
+      productData: req.body,
+      stripeAccount: req.headers['stripe-account'] as string,
+    });
 
     if (newProduct) {
       return res.status(201).json(newProduct);

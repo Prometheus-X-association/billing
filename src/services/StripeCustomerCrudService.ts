@@ -1,5 +1,5 @@
 import StripeService from './StripeSubscriptionSyncService';
-import { Logger } from '../libs/Logger';
+import {Logger} from '../libs/Logger';
 import Stripe from 'stripe';
 
 class StripeCustomerCrudService {
@@ -23,14 +23,17 @@ class StripeCustomerCrudService {
   }
 
   public async createCustomer(
-    customerData: Stripe.CustomerCreateParams,
+    customerData: Stripe.CustomerCreateParams & {connectedAccountId?: string},
   ): Promise<Stripe.Customer | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const customer = await this.stripeService.customers.create(customerData);
-      return customer;
+      const stripeConnect = customerData.connectedAccountId;
+
+      if(customerData.connectedAccountId) delete customerData.connectedAccountId;
+
+      return await this.stripeService.customers.create(customerData, {stripeAccount: stripeConnect});
     } catch (error) {
       const err = error as Error;
       Logger.error({

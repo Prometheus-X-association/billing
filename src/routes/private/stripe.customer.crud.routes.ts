@@ -13,7 +13,7 @@ const router = Router();
  * @swagger
  * /api/stripe/customers:
  *   post:
- *     summary: Create a new customer in Stripe
+ *     summary: Create a new customer for the connected account in stripe
  *     description: This endpoint allows you to create a new customer in Stripe with the given details.
  *     tags:
  *       - Stripe Customer
@@ -30,6 +30,9 @@ const router = Router();
  *               name:
  *                 type: string
  *                 description: The name of the customer.
+ *               connectedAccountId:
+ *                 type: string
+ *                 description: The connected account id.
  *     responses:
  *       201:
  *         description: Successfully created a new customer.

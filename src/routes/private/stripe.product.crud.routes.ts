@@ -17,6 +17,12 @@ const router = Router();
  *     description: Create a new product in Stripe with the given data.
  *     tags:
  *       - Stripe Product
+ *     parameters:
+ *     - name: stripe-account
+ *       in: header
+ *       description: stripe account
+ *       required: true
+ *       type: string
  *     requestBody:
  *       required: true
  *       content:
