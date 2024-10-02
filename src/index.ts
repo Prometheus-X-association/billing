@@ -27,7 +27,7 @@ export const main = async (): Promise<AppServer> => {
   await cleanerService.start();
   const server = app.listen(port, () => {
     Logger.log({
-      message: `Server running on: http://localhost: ${port}`,
+      message: `Server running on: http://localhost:${port}`,
     });
   });
   return { app, server };
