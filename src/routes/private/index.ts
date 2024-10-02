@@ -11,10 +11,26 @@ import stripeCrudPaymentIntent from './stripe.payment.intent.crud.routes';
 import stripeCrudPaymentMethod from './stripe.payment.method.crud.routes';
 import stripeCrudPersonMethod from './stripe.person.crud.routes';
 import stripeCrudSetupMethod from './stripe.setup.intent.crud.routes';
+import stripeToken from "./stripe.token.crud.routes";
+import billingCustomer from "./billing.customer.routes";
+import billingConnectedAccount from "./billing.connected.account.routes";
+import billingProduct from "./billing.product.routes";
 const routers = [
   {
     prefix: '/',
     router: billingSubscription,
+  },
+  {
+    prefix: '/connected-accounts',
+    router: billingConnectedAccount,
+  },
+  {
+    prefix: '/customer',
+    router: billingCustomer,
+  },
+  {
+    prefix: '/products',
+    router: billingProduct,
   },
   {
     prefix: '/sync/',
@@ -59,6 +75,10 @@ const routers = [
   {
     prefix: '/stripe/',
     router: stripeCrudSetupMethod,
+  },
+  {
+    prefix: '/stripe/',
+    router: stripeToken,
   },
 ];
 export default {
