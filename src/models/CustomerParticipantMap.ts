@@ -1,6 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 
-interface ICustomerParticipantMap extends Document {
+export interface ICustomerParticipantMap extends Document {
   customerId: string;
   participantId: string;
 }
