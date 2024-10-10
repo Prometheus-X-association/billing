@@ -15,6 +15,7 @@ import stripeToken from "./stripe.token.crud.routes";
 import billingCustomer from "./billing.customer.routes";
 import billingConnectedAccount from "./billing.connected.account.routes";
 import billingProduct from "./billing.product.routes";
+import stripeSession from "./stripe.session.crud.routes";
 const routers = [
   {
     prefix: '/',
@@ -25,7 +26,7 @@ const routers = [
     router: billingConnectedAccount,
   },
   {
-    prefix: '/customer',
+    prefix: '/customers',
     router: billingCustomer,
   },
   {
@@ -79,6 +80,10 @@ const routers = [
   {
     prefix: '/stripe/',
     router: stripeToken,
+  },
+  {
+    prefix: '/stripe/',
+    router: stripeSession,
   },
 ];
 export default {
