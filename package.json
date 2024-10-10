@@ -1,15 +1,18 @@
 {
-  "name": "PTX Billing Component",
+  "name": "ptx-billing-component",
   "version": "1.1.0",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "nodemon -- --development",
+    "dev": "nodemon L --development",
     "start": "node ./dist/index.js --production",
     "build": "rimraf ./dist && tsc --project tsconfig.build.json",
-    "test:unitary": "npx ts-mocha -p tsconfig.json tests/unitary/*.spec.ts --timeout 4000 --exit --test",
-    "test:functional": "npx ts-mocha -p tsconfig.json tests/functional/*.spec.ts --timeout 4000 --exit --test",
-    "test": "pnpm test:unitary && pnpm test:functional"
+    "test:unitary": "npx ts-mocha --reporter mochawesome --reporter-options reportFilename=unitaryReport -p tsconfig.json tests/unitary/*.spec.ts --timeout 4000 --exit --test",
+    "test:functional": "npx ts-mocha --reporter mochawesome --reporter-options reportFilename=functionalReport -p tsconfig.json tests/functional/*.spec.ts --timeout 4000 --exit --test --serial",
+    "test:scenario": "npx ts-mocha --reporter mochawesome --reporter-options reportFilename=scenarioReport -p tsconfig.json tests/scenario/*.spec.ts --timeout 4000 --exit --test --serial",
+    "test:integration": "npx ts-mocha --reporter mochawesome --reporter-options reportFilename=integrationReport -p tsconfig.json tests/integration/*.spec.ts --timeout 4000 --exit --test --serial",
+    "test": "pnpm test:unitary && pnpm test:functional && pnpm test:scenario && pnpm test:integration",
+    "swagger:generate": "ts-node src/libs/GenerateSwagger.ts"
   },
   "keywords": [],
   "author": "",
@@ -36,6 +39,7 @@
     "eslint-plugin-promise": "^7.1.0",
     "globals": "^15.9.0",
     "mocha": "^10.2.0",
+    "mochawesome": "^7.1.3",
     "mongodb-memory-server": "^10.0.0",
     "nodemon": "^3.1.4",
     "prettier": "^3.3.3",
