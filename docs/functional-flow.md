@@ -1,23 +1,12 @@
 # Functional Flow
-## Setup participant connected account and offers
+
+## Setup participant express connected account and offers
+
 ```mermaid
 sequenceDiagram
     participant User
     participant Billing
     participant Stripe
-
-    %% Optional: User creates an account token on billing
-    alt Create account token
-        User->>Billing: Create account token (optional)
-        activate Billing
-        Note over User, Billing: /api/stripe/token/account
-        Billing->>Stripe: Request account token
-        activate Stripe
-        Stripe-->>Billing: Respond with account token
-        deactivate Stripe
-        Billing-->>User: Return account token
-        deactivate Billing
-    end 
 
     %% User creates a connected account on billing
     User->>Billing: Create connected account
@@ -30,16 +19,16 @@ sequenceDiagram
     Billing-->>User: Return account token
     deactivate Billing
 
-    %% Optional: User update an connected account
-    alt Update connected account
-        User->>Billing: Update account token
+    %% Optional: User generate an account link to proceed to onboarding
+    alt Onboarding via account link
+        User->>Billing: create account link
         activate Billing
-        Note over User, Billing: /api/stripe/accounts/{accountId}
-        Billing->>Stripe: Request update connected account
+        Note over User, Billing: /api/stripe/accounts/${stripeAccount}/account_links
+        Billing->>Stripe: Request create account link
         activate Stripe
-        Stripe-->>Billing: Respond with updated connected account
+        Stripe-->>Billing: Respond with created account link
         deactivate Stripe
-        Billing-->>User: Return updated connected account
+        Billing-->>User: Return created account link
         deactivate Billing
     end
 
@@ -123,21 +112,109 @@ sequenceDiagram
     deactivate Billing
 ```
 
-## Exchange
+## adding payment method
+
+### API
 
 ```mermaid
 sequenceDiagram
-    participant Consumer Connector
+    participant Customer
     participant Billing
     participant Stripe
 
-    Consumer Connector->>Billing: Create customer for specific connected account
+    Customer->>Billing: Create a payment method
     activate Billing
-    Note over Consumer Connector, Billing: /api/stripe/customers
-    Billing->>Stripe: Request create customer
+    Note over Customer, Billing: /api/stripe/session
+    Billing->>Stripe: Request create session
     activate Stripe
-    Stripe-->>Billing: Respond created customer
+    Stripe-->>Billing: Respond created session
     deactivate Stripe
-    Billing-->>Consumer Connector: Return created customer
+    Billing-->>Customer: Return created session
+    deactivate Billing
+
+    Customer->>Stripe: add payment method in session form url
+    activate Stripe
+    Stripe-->>Stripe: add payment method
+    Stripe-->>Customer: redirect return url
+    deactivate Stripe
+```
+
+### Session
+
+```mermaid
+sequenceDiagram
+    participant Customer
+    participant Billing
+    participant Stripe
+
+    Customer->>Billing: Create a session
+    activate Billing
+    Note over Customer, Billing: /api/stripe/session
+    Billing->>Stripe: Request create session
+    activate Stripe
+    Stripe-->>Billing: Respond created session
+    deactivate Stripe
+    Billing-->>Customer: Return created session
+    deactivate Billing
+
+    Customer->>Stripe: add payment method in session form url
+    activate Stripe
+    Stripe-->>Stripe: add payment method
+    Stripe-->>Customer: redirect return url
+    deactivate Stripe
+```
+
+### Stripe component
+
+```mermaid
+sequenceDiagram
+    participant Customer
+    participant StripeElement
+    participant Billing
+    participant Stripe
+
+    Customer->>Billing: create Setup intent
+    activate Billing
+    Note over Customer, Billing: /api/stripe/setup-intent
+    Billing->>Stripe: create Setup intent
+    activate Stripe
+    Stripe-->>Billing: return Setup intent
+    deactivate Stripe
+    Billing-->>Customer: return Setup intent
+    deactivate Billing
+
+    Customer->>StripeElement: add PaymentMethod
+    activate StripeElement
+    StripeElement->>Stripe: create PaymentMethod
+    activate Stripe
+    Stripe-->>StripeElement: return PaymentMethod
+    deactivate Stripe
+    StripeElement-->>Customer: return PaymentMethod
+    deactivate StripeElement
+
+```
+
+## Subscription
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Billing
+    participant Stripe
+
+    User->>Billing: Create a subscriptions
+    activate Billing
+    Note over User, Billing: /api/stripe/subscriptions
+    Billing->>Stripe: Request create subscription
+    activate Stripe
+    Stripe-->>Billing: Respond created subscription
+    deactivate Stripe
+    Billing-->>User: Return created subscription
+    deactivate Billing
+
+    User->>Billing: add subscription
+    activate Billing
+    Note over User, Billing: /api/sync/subscriptions
+    Billing-->>User: return subscription mapped
     deactivate Billing
 ```
