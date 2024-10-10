@@ -1,115 +1,83 @@
 import supertest from 'supertest';
 import { expect } from 'chai';
+import sinon from 'sinon';
 import { config } from '../../src/config/environment';
 import http from 'http';
 import { getApp } from '../../src/app';
-import { _logYellow } from '../utils/utils';
-import StripePersonCrudService from '../../src/services/StripePersonCrudService';
+import { Logger } from '../../src/libs/Logger';
+import Stripe from 'stripe';
+import StripeService from '../../src/services/StripeSubscriptionSyncService';
 
 let server: http.Server;
-let testAccountId: string;
+let testAccountId: string = 'acct_123456789';
 let testPersonId: string;
-
-const stripePersonService = StripePersonCrudService.retrieveServiceInstance();
+let stripeStub: Stripe;
 
 const first_name = 'test_first_name';
 const last_name = 'test_last_name';
 
-const createTestAccount = async (): Promise<string> => {
-  const stripe = stripePersonService.getStripe();
-  if (!stripe) {
-    throw new Error('Stripe instance not available');
-  }
-
-  const accountToken = await stripe.tokens.create({
-    // account: {
-    //   individual: {
-    //     email: 'test@example.com',
-    //     dob: {
-    //       day: 1,
-    //       month: 1,
-    //       year: 1990,
-    //     },
-    //     address: {
-    //       line1: '3 bis rue Exemple',
-    //       city: 'Paris',
-    //       postal_code: '75001',
-    //       country: 'FR',
-    //     },
-    //     first_name,
-    //     last_name,
-    //   },
-    //   business_type: 'individual',
-    //   tos_shown_and_accepted: true,
-    // },
-    account: {
-      company: {
-        name: 'Example SARL',
-        address: {
-          line1: '3 bis rue Example',
-          city: 'Paris',
-          postal_code: '75001',
-          country: 'FR',
-        },
-      },
-      business_type: 'company',
-      tos_shown_and_accepted: true,
-    },
-  });
-
-  const account = await stripe.accounts.create({
-    type: 'custom',
-    country: 'FR',
-    email: 'test@example.com',
-    account_token: accountToken.id,
-    capabilities: {
-      card_payments: { requested: true },
-      transfers: { requested: true },
-    },
-  });
-
-  if (!account?.id) {
-    throw new Error('Failed to create test account');
-  }
-
-  return account.id;
-};
-
 describe('Stripe Person CRUD API', function () {
-  const title = this.title;
-
   before(async function () {
-    _logYellow(`- ${title} running...`);
-
-    testAccountId = await createTestAccount();
     const app = await getApp();
-
     await new Promise((resolve) => {
       const { port } = config;
       server = app.listen(port, () => {
-        console.log(`Test server is running on port ${port}`);
+        Logger.info({
+          message: `Test server is running on port ${port}`,
+        });
         resolve(true);
       });
     });
+
+    // Set up Stripe stub
+    stripeStub = {
+      accounts: {
+        createPerson: sinon.stub(),
+        retrievePerson: sinon.stub(),
+        updatePerson: sinon.stub(),
+        deletePerson: sinon.stub(),
+      },
+    } as unknown as Stripe;
+
+    const stripeServiceStub = sinon.createStubInstance(StripeService);
+    stripeServiceStub.getStripe.returns(stripeStub);
+    sinon
+      .stub(StripeService, 'retrieveServiceInstance')
+      .returns(stripeServiceStub as any);
   });
 
   after(async () => {
-    server.close();
-    if (testAccountId) {
-      await stripePersonService.getStripe()?.accounts.del(testAccountId);
+    if (server) {
+      server.close(() => {
+        Logger.info({
+          message: 'Test server closed',
+        });
+      });
     }
+    sinon.restore();
   });
 
   it('should create a new person', async () => {
+    const fakePerson = {
+      id: 'person_123456789',
+      first_name,
+      last_name,
+      email: 'test_person_1@example.com',
+      relationship: { representative: false, executive: true },
+      dob: { day: 1, month: 1, year: 1990 },
+    };
+    (stripeStub.accounts.createPerson as sinon.SinonStub).resolves(fakePerson);
+
     const response = await supertest(server)
       .post(`/api/stripe/accounts/${testAccountId}/persons`)
       .send({
         first_name,
         last_name,
         email: 'test_person_1@example.com',
-        relationship: { representative: true, executive: true },
+        relationship: { representative: false, executive: true },
         dob: { day: 1, month: 1, year: 1990 },
       });
+
     expect(response.status).to.equal(201);
     expect(response.body).to.have.property('id');
     expect(response.body).to.have.property('first_name', first_name);
@@ -117,29 +85,52 @@ describe('Stripe Person CRUD API', function () {
   });
 
   it('should retrieve a person', async () => {
+    const fakePerson = {
+      id: testPersonId,
+      first_name,
+      last_name,
+    };
+    (stripeStub.accounts.retrievePerson as sinon.SinonStub).resolves(fakePerson);
+
     const response = await supertest(server).get(
       `/api/stripe/accounts/${testAccountId}/persons/${testPersonId}`,
     );
+
     expect(response.status).to.equal(200);
     expect(response.body).to.have.property('id', testPersonId);
     expect(response.body).to.have.property('first_name', first_name);
   });
 
   it('should update an existing person', async () => {
+    const fakeUpdatedPerson = {
+      id: testPersonId,
+      first_name: 'first_name_2',
+      last_name,
+    };
+    (stripeStub.accounts.updatePerson as sinon.SinonStub).resolves(fakeUpdatedPerson);
+
     const response = await supertest(server)
       .post(`/api/stripe/accounts/${testAccountId}/persons/${testPersonId}`)
       .send({
         first_name: 'first_name_2',
       });
+
     expect(response.status).to.equal(200);
     expect(response.body).to.have.property('id', testPersonId);
     expect(response.body).to.have.property('first_name', 'first_name_2');
   });
 
   it('should delete a person', async () => {
+    const fakeDeletedPerson = {
+      id: testPersonId,
+      deleted: true,
+    };
+    (stripeStub.accounts.deletePerson as sinon.SinonStub).resolves(fakeDeletedPerson);
+
     const response = await supertest(server).delete(
       `/api/stripe/accounts/${testAccountId}/persons/${testPersonId}`,
     );
+
     expect(response.status).to.equal(200);
     expect(response.body).to.have.property(
       'message',
@@ -148,9 +139,12 @@ describe('Stripe Person CRUD API', function () {
   });
 
   it('should return 404 for non-existent person', async () => {
+    (stripeStub.accounts.retrievePerson as sinon.SinonStub).rejects(new Error('Person not found'));
+
     const response = await supertest(server).get(
       `/api/stripe/accounts/${testAccountId}/persons/non_existent_id`,
     );
+
     expect(response.status).to.equal(404);
     expect(response.body).to.have.property('message', 'Person not found.');
   });

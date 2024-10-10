@@ -3,10 +3,10 @@ import { expect } from 'chai';
 import { config } from '../../src/config/environment';
 import http from 'http';
 import { getApp } from '../../src/app';
-import { _logYellow } from '../utils/utils';
 import sinon from 'sinon';
 import Stripe from 'stripe';
 import StripeService from '../../src/services/StripeSubscriptionSyncService';
+import { Logger } from '../../src/libs/Logger';
 
 let server: http.Server;
 let testPaymentIntentId: string;
@@ -14,17 +14,16 @@ const testStripeAccountId: string = 'acct_50726F6D6574686575732058';
 const fakePaymentMethodId = 'pm_50726F6D6574686575732058';
 
 describe('Stripe Payment Intent API', function () {
-  const title = this.title;
   let stripeStub: Stripe;
 
   before(async function () {
-    _logYellow(`- ${title} running...`);
-
     const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;
       server = app.listen(port, () => {
-        console.log(`Test server is running on port ${port}`);
+        Logger.info({
+          message: `Test server is running on port ${port}`,
+        });
         resolve(true);
       });
     });
@@ -46,8 +45,14 @@ describe('Stripe Payment Intent API', function () {
   });
 
   after(() => {
-    server.close();
-    sinon.restore();
+    if (server) {
+      server.close(() => {
+        Logger.info({
+          message: 'Test server closed',
+        });
+      });
+      sinon.restore();
+    }
   });
 
   it('should create a new payment intent', async () => {
@@ -62,7 +67,7 @@ describe('Stripe Payment Intent API', function () {
 
     const response = await supertest(server)
       .post('/api/stripe/payment_intents')
-      .set('Stripe-Account', testStripeAccountId)
+      .set('stripe-account', testStripeAccountId)
       .send({
         amount: 2,
         currency: 'usd',
@@ -88,7 +93,7 @@ describe('Stripe Payment Intent API', function () {
 
     const response = await supertest(server)
       .get(`/api/stripe/payment_intents/${testPaymentIntentId}`)
-      .set('Stripe-Account', testStripeAccountId);
+      .set('stripe-account', testStripeAccountId);
 
     expect(response.status).to.equal(200);
     expect(response.body).to.have.property('id', testPaymentIntentId);
@@ -108,7 +113,7 @@ describe('Stripe Payment Intent API', function () {
 
     const response = await supertest(server)
       .post(`/api/stripe/payment_intents/${testPaymentIntentId}`)
-      .set('Stripe-Account', testStripeAccountId)
+      .set('stripe-account', testStripeAccountId)
       .send({
         amount: 3,
       });
@@ -129,7 +134,7 @@ describe('Stripe Payment Intent API', function () {
 
     const response = await supertest(server)
       .post(`/api/stripe/payment_intents/${testPaymentIntentId}/confirm`)
-      .set('Stripe-Account', testStripeAccountId)
+      .set('stripe-account', testStripeAccountId)
       .send({
         payment_method: fakePaymentMethodId,
       });
@@ -146,7 +151,7 @@ describe('Stripe Payment Intent API', function () {
 
     const response = await supertest(server)
       .get('/api/stripe/payment_intents/non_existent_id')
-      .set('Stripe-Account', testStripeAccountId);
+      .set('stripe-account', testStripeAccountId);
 
     expect(response.status).to.equal(404);
     expect(response.body).to.have.property(

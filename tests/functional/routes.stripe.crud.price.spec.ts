@@ -1,114 +1,165 @@
 import supertest from 'supertest';
 import { expect } from 'chai';
+import sinon from 'sinon';
 import { config } from '../../src/config/environment';
 import http from 'http';
-import StripePriceCrudService from '../../src/services/StripePriceCrudService';
 import { getApp } from '../../src/app';
-import { _logYellow } from '../utils/utils';
-
-const stripePriceService = StripePriceCrudService.retrieveServiceInstance();
+import { Logger } from '../../src/libs/Logger';
+import Stripe from 'stripe';
+import StripeService from '../../src/services/StripeSubscriptionSyncService';
 
 let server: http.Server;
-
-const productId1 = 'prod_test_1';
-let testPrice1: string | undefined;
-
-const ensureProductExists = async (productId: string) => {
-  try {
-    const product = await stripePriceService
-      .getStripe()
-      ?.products.retrieve(productId);
-    return product?.id;
-  } catch (error: any) {
-    if (error.raw?.type === 'invalid_request_error') {
-      const product = await stripePriceService.getStripe()?.products.create({
-        id: productId,
-        name: `Test Product for ${productId}`,
-      });
-      return product?.id;
-    }
-    throw error;
-  }
-};
-
-const ensurePriceExists = async (productId: string) => {
-  const price = await stripePriceService.getStripe()?.prices.create({
-    unit_amount: 1,
-    currency: 'usd',
-    recurring: { interval: 'month' },
-    product: productId,
-  });
-  return price?.id;
-};
+let testConnectedAccountId: string = 'acct_123456789';
+let testProductId: string = 'prod_123456789';
+let testPriceId: string;
+let stripeStub: Stripe;
 
 describe('Stripe Price CRUD API', function () {
-  const title = this.title;
   before(async function () {
-    _logYellow(`- ${title} running...`);
-
-    await ensureProductExists(productId1);
-    testPrice1 = await ensurePriceExists(productId1);
     const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;
       server = app.listen(port, () => {
-        console.log(`Test server is running on port ${port}`);
+        Logger.info({
+          message: `Test server is running on port ${port}`,
+        });
         resolve(true);
       });
     });
+
+    // Set up Stripe stub
+    stripeStub = {
+      prices: {
+        create: sinon.stub(),
+        retrieve: sinon.stub(),
+        update: sinon.stub(),
+        list: sinon.stub(),
+      },
+      products: {
+        retrieve: sinon.stub(),
+      },
+    } as unknown as Stripe;
+
+    const stripeServiceStub = sinon.createStubInstance(StripeService);
+    stripeServiceStub.getStripe.returns(stripeStub);
+    sinon
+      .stub(StripeService, 'retrieveServiceInstance')
+      .returns(stripeServiceStub as any);
   });
 
   after(async () => {
-    server.close();
+    if (server) {
+      server.close(() => {
+        Logger.info({
+          message: 'Test server closed',
+        });
+      });
+    }
+    sinon.restore();
   });
 
   it('should create a new price', async () => {
+    const fakePrice = {
+      id: 'price_123456789',
+      unit_amount: 2,
+      currency: 'usd',
+      recurring: { interval: 'month' },
+      product: testProductId,
+    };
+    (stripeStub.prices.create as sinon.SinonStub).resolves(fakePrice);
+
     const response = await supertest(server)
       .post('/api/stripe/prices')
+      .set('stripe-account', testConnectedAccountId)
       .send({
         unit_amount: 2,
         currency: 'usd',
         recurring: { interval: 'month' },
-        product: productId1,
+        product: testProductId,
       });
+
     expect(response.status).to.equal(201);
     expect(response.body).to.have.property('id');
-    expect(response.body).to.have.property('product', productId1);
-    testPrice1 = response.body.id;
+    testPriceId = response.body.id;
   });
 
   it('should retrieve all prices', async () => {
-    const response = await supertest(server).get('/api/stripe/prices');
+    const fakePricesList = {
+      data: [
+        {
+          id: testPriceId,
+          unit_amount: 2,
+          currency: 'usd',
+          recurring: { interval: 'month' },
+          product: testProductId,
+        },
+      ],
+      has_more: false,
+    };
+    (stripeStub.prices.list as sinon.SinonStub).resolves(fakePricesList);
+
+    const response = await supertest(server)
+      .get('/api/stripe/prices')
+      .set('stripe-account', testConnectedAccountId);
+
     expect(response.status).to.equal(200);
     expect(response.body).to.be.an('array');
-    const price = response.body.find((p: any) => p.id === testPrice1);
+    const price = response.body.find((p: any) => p.id === testPriceId);
     expect(price).to.exist;
   });
 
   it('should retrieve a price by ID', async () => {
-    const response = await supertest(server).get(
-      `/api/stripe/prices/${testPrice1}`,
-    );
+    const fakePrice = {
+      id: testPriceId,
+      unit_amount: 2,
+      currency: 'usd',
+      recurring: { interval: 'month' },
+      product: testProductId,
+    };
+    (stripeStub.prices.retrieve as sinon.SinonStub).resolves(fakePrice);
+
+    const response = await supertest(server)
+      .get(`/api/stripe/prices/${testPriceId}`)
+      .set('stripe-account', testConnectedAccountId);
+
     expect(response.status).to.equal(200);
-    expect(response.body).to.have.property('id', testPrice1);
-    expect(response.body).to.have.property('product', productId1);
+    expect(response.body).to.have.property('id', testPriceId);
   });
 
   it('should update an existing price', async () => {
+    const fakeUpdatedPrice = {
+      id: testPriceId,
+      unit_amount: 2,
+      currency: 'usd',
+      recurring: { interval: 'month' },
+      product: testProductId,
+      metadata: { key: 'value' },
+    };
+    (stripeStub.prices.update as sinon.SinonStub).resolves(fakeUpdatedPrice);
+
     const response = await supertest(server)
-      .put(`/api/stripe/prices/${testPrice1}`)
+      .put(`/api/stripe/prices/${testPriceId}`)
+      .set('stripe-account', testConnectedAccountId)
       .send({
         metadata: { key: 'value' },
       });
+
     expect(response.status).to.equal(200);
-    expect(response.body).to.have.property('id', testPrice1);
+    expect(response.body).to.have.property('id', testPriceId);
     expect(response.body).to.have.property('metadata').eql({ key: 'value' });
   });
 
   it('should deactivate a price', async () => {
-    const response = await supertest(server).delete(
-      `/api/stripe/prices/${testPrice1}`,
-    );
+    const fakeDeactivatedPrice = {
+      id: testPriceId,
+      active: false,
+    };
+    (stripeStub.prices.update as sinon.SinonStub).resolves(fakeDeactivatedPrice);
+
+    const response = await supertest(server)
+      .delete(`/api/stripe/prices/${testPriceId}`)
+      .set('stripe-account', testConnectedAccountId);
+
     expect(response.status).to.equal(200);
     expect(response.body).to.have.property(
       'message',
@@ -117,9 +168,12 @@ describe('Stripe Price CRUD API', function () {
   });
 
   it('should return 404 for non-existent price', async () => {
-    const response = await supertest(server).get(
-      '/api/stripe/prices/non_existent_id',
-    );
+    (stripeStub.prices.retrieve as sinon.SinonStub).rejects(new Error('Price not found'));
+
+    const response = await supertest(server)
+      .get('/api/stripe/prices/non_existent_id')
+      .set('stripe-account', testConnectedAccountId);
+
     expect(response.status).to.equal(404);
     expect(response.body).to.have.property('message', 'Price not found.');
   });

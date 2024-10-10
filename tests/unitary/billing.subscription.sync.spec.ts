@@ -9,17 +9,14 @@ import {
   Subscription,
   SubscriptionType,
 } from '../../src/types/billing.subscription.types';
-import { _logYellow } from '../utils/utils';
 
 describe('Subscription Sync Service', function () {
-  const title = this.title;
   const now = new Date();
   let mongoServer: MongoMemoryServer;
   let subscriptionService: BillingSubscriptionService;
   let syncService: BillingSubscriptionSyncService;
 
   before(async function () {
-    _logYellow(`- ${title} running...`);
     this.timeout(10000);
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
@@ -39,9 +36,9 @@ describe('Subscription Sync Service', function () {
     const testSubscriptions: Omit<Subscription, '_id'>[] = [
       {
         isActive: true,
-        participantId: 'participant1',
+        participant: 'http://catalog.api.com/participant1',
         subscriptionType: 'limitDate' as SubscriptionType,
-        resourceId: 'resource1',
+        resource: 'resource1',
         details: {
           limitDate: new Date(now.getTime() + 86400000),
           startDate: now,
@@ -50,9 +47,9 @@ describe('Subscription Sync Service', function () {
       },
       {
         isActive: true,
-        participantId: 'participant2',
+        participant: 'http://catalog.api.com/participant2',
         subscriptionType: 'payAmount' as SubscriptionType,
-        resourceId: 'resource2',
+        resource: 'resource2',
         details: {
           payAmount: 100,
           startDate: now,
@@ -61,9 +58,9 @@ describe('Subscription Sync Service', function () {
       },
       {
         isActive: false,
-        participantId: 'participant3',
+        participant: 'http://catalog.api.com/participant3',
         subscriptionType: 'usageCount' as SubscriptionType,
-        resourceId: 'resource3',
+        resource: 'resource3',
         details: {
           usageCount: 5,
           startDate: now,
@@ -86,9 +83,9 @@ describe('Subscription Sync Service', function () {
     ) => {
       expect(actual).to.include({
         isActive: expected.isActive,
-        participantId: expected.participantId,
+        participant: expected.participant,
         subscriptionType: expected.subscriptionType,
-        resourceId: expected.resourceId,
+        resource: expected.resource,
       });
       expect(
         isValidDate(actual.details.startDate),
@@ -126,9 +123,9 @@ describe('Subscription Sync Service', function () {
   it('should handle delete operation and remove subscription from billing service', async function () {
     const mockSubscriptionData: Omit<Subscription, '_id'> = {
       isActive: true,
-      participantId: 'participant123',
+      participant: 'http://catalog.api.com/participant123',
       subscriptionType: 'limitDate' as SubscriptionType,
-      resourceId: 'resource123',
+      resource: 'resource123',
       details: {
         limitDate: new Date(now.getTime() + 86400000),
         startDate: now,
@@ -155,7 +152,7 @@ describe('Subscription Sync Service', function () {
     expect(
       addSubscriptionSpy.calledWith(
         sinon.match({
-          participantId: 'participant123',
+          participant: 'http://catalog.api.com/participant123',
         }),
       ),
       'Expect addSubscription to be called',

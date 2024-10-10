@@ -1,14 +1,11 @@
 import { expect } from 'chai';
 import BillingSubscriptionService from '../../src/services/BillingSubscriptionService';
 import { Subscription } from '../../src/types/billing.subscription.types';
-import { _logYellow } from '../utils/utils';
 
 describe('Billing Subscription Service', function () {
-  const title = this.title;
   let billingService: BillingSubscriptionService;
 
   before(() => {
-    _logYellow(`- ${title} running...`);
     billingService = BillingSubscriptionService.retrieveServiceInstance();
     const now = new Date();
     const startDate = new Date(now.getTime() - 86400000); // 1 day in the past
@@ -19,9 +16,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: '_id_1',
         isActive: true,
-        participantId: 'participant1',
+        participant: 'http://catalog.api.com/participant1',
         subscriptionType: 'limitDate',
-        resourceId: 'resource1',
+        resource: 'resource1',
         details: {
           limitDate: futureDate,
           startDate: startDate,
@@ -31,9 +28,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: '_id_2',
         isActive: true,
-        participantId: 'participant1',
+        participant: 'http://catalog.api.com/participant1',
         subscriptionType: 'usageCount',
-        resourceIds: ['resource2', 'resource3'],
+        resources: ['resource2', 'resource3'],
         details: {
           usageCount: 10,
           startDate: startDate,
@@ -43,9 +40,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: '_id_3',
         isActive: false,
-        participantId: 'participant2',
+        participant: 'http://catalog.api.com/participant2',
         subscriptionType: 'payAmount',
-        resourceId: 'resource4',
+        resource: 'resource4',
         details: {
           payAmount: 50,
           startDate: startDate,
@@ -55,9 +52,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: '_id_4',
         isActive: true,
-        participantId: 'participant2',
+        participant: 'http://catalog.api.com/participant2',
         subscriptionType: 'payAmount',
-        resourceIds: ['resource5', 'resource6'],
+        resources: ['resource5', 'resource6'],
         details: {
           payAmount: 100,
           startDate: startDate,
@@ -67,9 +64,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: '_id_5',
         isActive: true,
-        participantId: 'participant3',
+        participant: 'http://catalog.api.com/participant3',
         subscriptionType: 'usageCount',
-        resourceId: 'resource6',
+        resource: 'resource6',
         details: {
           usageCount: 5,
           startDate: startDate,
@@ -79,9 +76,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: 'usage_1',
         isActive: true,
-        participantId: 'participant1',
+        participant: 'http://catalog.api.com/participant1',
         subscriptionType: 'usageCount',
-        resourceId: 'resource1',
+        resource: 'resource1',
         details: {
           usageCount: 5,
           startDate: startDate,
@@ -91,9 +88,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: 'usage_2',
         isActive: true,
-        participantId: 'participant1',
+        participant: 'http://catalog.api.com/participant1',
         subscriptionType: 'usageCount',
-        resourceId: 'resource1',
+        resource: 'resource1',
         details: {
           usageCount: 3,
           startDate: startDate,
@@ -103,9 +100,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: 'pay_1',
         isActive: true,
-        participantId: 'participant2',
+        participant: 'http://catalog.api.com/participant2',
         subscriptionType: 'payAmount',
-        resourceId: 'resource2',
+        resource: 'resource2',
         details: {
           payAmount: 100,
           startDate: startDate,
@@ -115,9 +112,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: 'pay_2',
         isActive: true,
-        participantId: 'participant2',
+        participant: 'http://catalog.api.com/participant2',
         subscriptionType: 'payAmount',
-        resourceId: 'resource2',
+        resource: 'resource2',
         details: {
           payAmount: 50,
           startDate: startDate,
@@ -127,9 +124,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: 'limit_1',
         isActive: true,
-        participantId: 'participant3',
+        participant: 'http://catalog.api.com/participant3',
         subscriptionType: 'limitDate',
-        resourceId: 'resource3',
+        resource: 'resource3',
         details: {
           limitDate: farFutureDate,
           startDate: startDate,
@@ -139,9 +136,9 @@ describe('Billing Subscription Service', function () {
       {
         _id: 'limit_2',
         isActive: true,
-        participantId: 'participant3',
+        participant: 'http://catalog.api.com/participant3',
         subscriptionType: 'limitDate',
-        resourceId: 'resource3',
+        resource: 'resource3',
         details: {
           limitDate: futureDate,
           startDate: startDate,
@@ -155,7 +152,7 @@ describe('Billing Subscription Service', function () {
 
   describe('getParticipantSubscriptions', () => {
     it('should return all subscriptions for the given participant', () => {
-      const result = billingService.getParticipantSubscriptions('participant1');
+      const result = billingService.getParticipantSubscriptions('http://catalog.api.com/participant1');
       expect(result).to.have.lengthOf(4);
       expect(result.map((sub) => sub._id)).to.include.members([
         '_id_1',
@@ -166,7 +163,7 @@ describe('Billing Subscription Service', function () {
     });
 
     it('should return an empty array if the participant has no subscriptions', () => {
-      const result = billingService.getParticipantSubscriptions('participant4');
+      const result = billingService.getParticipantSubscriptions('http://catalog.api.com/participant4');
       expect(result).to.be.an('array').that.is.empty;
     });
   });
@@ -174,7 +171,7 @@ describe('Billing Subscription Service', function () {
   describe('getParticipantResourceSubscriptions', () => {
     it('should return the subscriptions for a specific resource', () => {
       const result = billingService.getParticipantResourceSubscriptions(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource1',
       );
       expect(result).to.have.lengthOf(3);
@@ -187,7 +184,7 @@ describe('Billing Subscription Service', function () {
 
     it('should return subscriptions for a resource in a group subscription', () => {
       const result = billingService.getParticipantResourceSubscriptions(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource2',
       );
       expect(result).to.have.lengthOf(1);
@@ -196,7 +193,7 @@ describe('Billing Subscription Service', function () {
 
     it('should return an empty array if no subscription exists for the specific resource', () => {
       const result = billingService.getParticipantResourceSubscriptions(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'nonexistentResource',
       );
       expect(result).to.be.an('array').that.is.empty;
@@ -206,7 +203,7 @@ describe('Billing Subscription Service', function () {
   describe('getLimitDateSubscriptions', () => {
     it('should return the limit date subscriptions for a specific resource', () => {
       const result = billingService.getLimitDateSubscriptions(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource1',
       );
       expect(result).to.have.lengthOf(1);
@@ -216,7 +213,7 @@ describe('Billing Subscription Service', function () {
 
     it('should return an empty array if no limit date subscription exists', () => {
       const result = billingService.getLimitDateSubscriptions(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource2',
       );
       expect(result).to.be.an('array').that.is.empty;
@@ -226,7 +223,7 @@ describe('Billing Subscription Service', function () {
   describe('getPayAmountSubscriptions', () => {
     it('should return the pay amount subscriptions for a specific resource', () => {
       const result = billingService.getPayAmountSubscriptions(
-        'participant2',
+        'http://catalog.api.com/participant2',
         'resource2',
       );
       expect(result).to.have.lengthOf(2);
@@ -239,7 +236,7 @@ describe('Billing Subscription Service', function () {
 
     it('should return an empty array if no pay amount subscription exists', () => {
       const result = billingService.getPayAmountSubscriptions(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource1',
       );
       expect(result).to.be.an('array').that.is.empty;
@@ -249,7 +246,7 @@ describe('Billing Subscription Service', function () {
   describe('getUsageCountSubscriptions', () => {
     it('should return the usage count subscriptions for a specific resource', () => {
       const result = billingService.getUsageCountSubscriptions(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource1',
       );
       expect(result).to.have.lengthOf(2);
@@ -262,7 +259,7 @@ describe('Billing Subscription Service', function () {
 
     it('should return an empty array if no usage count subscription exists', () => {
       const result = billingService.getUsageCountSubscriptions(
-        'participant2',
+        'http://catalog.api.com/participant2',
         'resource4',
       );
       expect(result).to.be.an('array').that.is.empty;
@@ -272,7 +269,7 @@ describe('Billing Subscription Service', function () {
   describe('hasActiveSubscriptionFor', () => {
     it('should return true if there is an active subscription for the given participant and resource', () => {
       const result = billingService.hasActiveSubscriptionFor(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource1',
       );
       expect(result).to.be.true;
@@ -280,7 +277,7 @@ describe('Billing Subscription Service', function () {
 
     it('should return true if there is an active group subscription for the given participant and resource', () => {
       const result = billingService.hasActiveSubscriptionFor(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource2',
       );
       expect(result).to.be.true;
@@ -288,7 +285,7 @@ describe('Billing Subscription Service', function () {
 
     it('should return false if there is no active subscription for the given participant and resource', () => {
       const result = billingService.hasActiveSubscriptionFor(
-        'participant2',
+        'http://catalog.api.com/participant2',
         'resource4',
       );
       expect(result).to.be.false;
@@ -296,7 +293,7 @@ describe('Billing Subscription Service', function () {
 
     it('should return false if there is no subscription for the given participant and resource', () => {
       const result = billingService.hasActiveSubscriptionFor(
-        'participant4',
+        'http://catalog.api.com/participant4',
         'resource1',
       );
       expect(result).to.be.false;
@@ -306,7 +303,7 @@ describe('Billing Subscription Service', function () {
   describe('getLastActiveUsageCount', () => {
     it('should return the subscription with the lowest non-zero usage count', () => {
       const result = billingService.getLastActiveUsageCount(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource1',
       );
       expect(result).to.deep.equal({
@@ -319,7 +316,7 @@ describe('Billing Subscription Service', function () {
       billingService.removeSubscriptionById('usage_1');
       billingService.removeSubscriptionById('usage_2');
       const result = billingService.getLastActiveUsageCount(
-        'participant1',
+        'http://catalog.api.com/participant1',
         'resource1',
       );
       expect(result).to.be.undefined;
@@ -337,7 +334,7 @@ describe('Billing Subscription Service', function () {
   describe('getLastActivePayAmount', () => {
     it('should return the subscription with the lowest non-zero pay amount', () => {
       const result = billingService.getLastActivePayAmount(
-        'participant2',
+        'http://catalog.api.com/participant2',
         'resource2',
       );
       expect(result).to.deep.equal({ subscriptionId: 'pay_2', payAmount: 50 });
@@ -347,7 +344,7 @@ describe('Billing Subscription Service', function () {
       billingService.removeSubscriptionById('pay_1');
       billingService.removeSubscriptionById('pay_2');
       const result = billingService.getLastActivePayAmount(
-        'participant2',
+        'http://catalog.api.com/participant2',
         'resource2',
       );
       expect(result).to.be.undefined;
@@ -365,7 +362,7 @@ describe('Billing Subscription Service', function () {
   describe('getLastActiveLimitDate', () => {
     it('should return the subscription with the closest future limit date', () => {
       const result = billingService.getLastActiveLimitDate(
-        'participant3',
+        'http://catalog.api.com/participant3',
         'resource3',
       );
       expect(result?.subscriptionId).to.equal('limit_2');
@@ -380,7 +377,7 @@ describe('Billing Subscription Service', function () {
       billingService.removeSubscriptionById('limit_1');
       billingService.removeSubscriptionById('limit_2');
       const result = billingService.getLastActiveLimitDate(
-        'participant3',
+        'http://catalog.api.com/participant3',
         'resource3',
       );
       expect(result).to.be.undefined;

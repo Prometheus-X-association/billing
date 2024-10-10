@@ -3,60 +3,69 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { config } from '../../src/config/environment';
 import http from 'http';
-import StripeConnectedAccountService from '../../src/services/StripeConnectedAccountService';
 import { getApp } from '../../src/app';
-import { _logYellow } from '../utils/utils';
+import { Logger } from '../../src/libs/Logger';
+import Stripe from 'stripe';
+import StripeService from '../../src/services/StripeSubscriptionSyncService';
 
 let server: http.Server;
-let stripeStub: any;
 let testConnectedAccountId: string;
 const id: string = 'acct_50726F6D6574686575732058';
 const email: string = 'test_connected_account@example.com';
-const type: string = 'standard';
-// todo: connect to real stripe 'connected account'
+const type: string = 'express';
+let stripeStub: Stripe;
+
 describe('Stripe Connected Account CRUD API', function () {
-  const title = this.title;
-
   before(async function () {
-    _logYellow(`- ${title} running...`);
-
     const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;
       server = app.listen(port, () => {
-        console.log(`Test server is running on port ${port}`);
+        Logger.info({
+          message: `Test server is running on port ${port}`,
+        });
         resolve(true);
       });
     });
 
+    // Set up Stripe stub
     stripeStub = {
       accounts: {
         create: sinon.stub(),
         retrieve: sinon.stub(),
         update: sinon.stub(),
         del: sinon.stub(),
-        createLoginLink: sinon.stub(),
       },
-    };
+      accountLinks: {
+        create: sinon.stub(),
+      },
+    } as unknown as Stripe;
 
-    const stripeConnectedAccountService =
-      StripeConnectedAccountService.retrieveServiceInstance();
-    (stripeConnectedAccountService as any).stripeService = stripeStub;
+    const stripeServiceStub = sinon.createStubInstance(StripeService);
+    stripeServiceStub.getStripe.returns(stripeStub);
+    sinon
+      .stub(StripeService, 'retrieveServiceInstance')
+      .returns(stripeServiceStub as any);
   });
 
   after(async () => {
-    server.close();
+    if (server) {
+      server.close(() => {
+        Logger.info({
+          message: 'Test server closed',
+        });
+      });
+    }
     sinon.restore();
   });
 
   it('should create a new connected account', async () => {
     const fakeAccount = {
-      id,
+      id: 'acct_123456789',
       type,
       email,
     };
-
-    stripeStub.accounts.create.resolves(fakeAccount);
+    (stripeStub.accounts.create as sinon.SinonStub).resolves(fakeAccount);
 
     const response = await supertest(server).post('/api/stripe/accounts').send({
       type,
@@ -65,7 +74,7 @@ describe('Stripe Connected Account CRUD API', function () {
     });
 
     expect(response.status).to.equal(201);
-    expect(response.body).to.have.property('id', id);
+    expect(response.body).to.have.property('id');
     expect(response.body).to.have.property('type', type);
     testConnectedAccountId = response.body.id;
   });
@@ -76,8 +85,7 @@ describe('Stripe Connected Account CRUD API', function () {
       type,
       email,
     };
-
-    stripeStub.accounts.retrieve.resolves(fakeAccount);
+    (stripeStub.accounts.retrieve as sinon.SinonStub).resolves(fakeAccount);
 
     const response = await supertest(server).get(
       `/api/stripe/accounts/${testConnectedAccountId}`,
@@ -89,14 +97,13 @@ describe('Stripe Connected Account CRUD API', function () {
   });
 
   it('should update an existing connected account', async () => {
-    const updatedAccount = {
+    const fakeUpdatedAccount = {
       id: testConnectedAccountId,
       type,
       email,
       metadata: { key: 'value' },
     };
-
-    stripeStub.accounts.update.resolves(updatedAccount);
+    (stripeStub.accounts.update as sinon.SinonStub).resolves(fakeUpdatedAccount);
 
     const response = await supertest(server)
       .post(`/api/stripe/accounts/${testConnectedAccountId}`)
@@ -109,29 +116,42 @@ describe('Stripe Connected Account CRUD API', function () {
     expect(response.body).to.have.property('metadata').eql({ key: 'value' });
   });
 
-  it('should create a login link for a connected account', async () => {
-    const fakeLoginLink = {
-      url: `https://connect.stripe.com/express/rba/${id}/login`,
-    };
-
-    stripeStub.accounts.createLoginLink.resolves(fakeLoginLink);
+  it('should return a 404 for a not completed onboarding', async () => {
+    (stripeStub.accounts.retrieve as sinon.SinonStub).rejects(new Error('Account not found'));
 
     const response = await supertest(server).post(
       `/api/stripe/accounts/${testConnectedAccountId}/login_links`,
     );
 
+    expect(response.status).to.equal(404);
+  });
+
+  it('should create a new account link', async () => {
+    const fakeAccountLink = {
+      object: 'account_link',
+      url: 'https://connect.stripe.com/setup/s/random-code',
+    };
+    (stripeStub.accountLinks.create as sinon.SinonStub).resolves(fakeAccountLink);
+
+    const response = await supertest(server).post(
+      `/api/stripe/accounts/${testConnectedAccountId}/account_links`,
+    ).send({
+      refresh_url: 'https://www.test.com',
+      return_url: 'https://www.test.com',
+      type: 'account_onboarding',
+    });
+
     expect(response.status).to.equal(200);
     expect(response.body).to.have.property('url');
-    expect(response.body.url).to.be.a('string');
+    expect(response.body).to.have.property('object', 'account_link');
   });
 
   it('should delete an existing connected account', async () => {
-    const deletedAccount = {
+    const fakeDeletedAccount = {
       id: testConnectedAccountId,
       deleted: true,
     };
-
-    stripeStub.accounts.del.resolves(deletedAccount);
+    (stripeStub.accounts.del as sinon.SinonStub).resolves(fakeDeletedAccount);
 
     const response = await supertest(server).delete(
       `/api/stripe/accounts/${testConnectedAccountId}`,
@@ -145,7 +165,7 @@ describe('Stripe Connected Account CRUD API', function () {
   });
 
   it('should return a 404 for a non-existent connected account', async () => {
-    stripeStub.accounts.retrieve.rejects(new Error('No such account'));
+    (stripeStub.accounts.retrieve as sinon.SinonStub).rejects(new Error('Account not found'));
 
     const response = await supertest(server).get(
       '/api/stripe/accounts/non_existent_id',

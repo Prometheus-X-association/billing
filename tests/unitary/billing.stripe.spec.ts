@@ -7,11 +7,9 @@ import { Subscription } from '../../src/types/billing.subscription.types';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import BillingSubscriptionService from '../../src/services/BillingSubscriptionService';
-import { _logYellow } from '../utils/utils';
 
 const email = 'test@example.com';
 describe('Billing Stripe sync service test cases', function () {
-  const title = this.title;
   let stripeStub: {
     customers: {
       create: sinon.SinonStub;
@@ -26,8 +24,6 @@ describe('Billing Stripe sync service test cases', function () {
   let subscriptionService: BillingSubscriptionService;
   let subscriptions: unknown[];
   before(async function () {
-    _logYellow(`- ${title} running...`);
-
     this.timeout(10000);
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
@@ -45,7 +41,7 @@ describe('Billing Stripe sync service test cases', function () {
 
     stripeStub = {
       customers: {
-        create: sinon.stub().resolves({ id: customerId } as Stripe.Customer),
+        create: sinon.stub().resolves({ id: stripeCustomerId } as Stripe.Customer),
       },
       subscriptions: {
         retrieve: sinon.stub(),
@@ -82,7 +78,7 @@ describe('Billing Stripe sync service test cases', function () {
       }),
     ).to.be.true;
     if (customer) {
-      expect(customer.id).to.equal(customerId);
+      expect(customer.id).to.equal(stripeCustomerId);
     }
   });
 
@@ -93,8 +89,8 @@ describe('Billing Stripe sync service test cases', function () {
   // });
 
   const subscriptionId = 'test_subscription_id';
-  const participantId = 'test_participant_id';
-  const customerId = 'test_customer_id';
+  const participant = 'http://catalog.api.com/test_participant_id';
+  const stripeCustomerId = 'test_customer_id';
   it('should handle "customer.subscription.created" event and call addSubscriptions in BillingSubscriptionSyncService', async () => {
     let billingSubscriptionSyncServiceStub: sinon.SinonStub = sinon
       .stub(BillingSubscriptionSyncService.prototype, 'addSubscriptions')
@@ -113,10 +109,10 @@ describe('Billing Stripe sync service test cases', function () {
     const fakeSubscription = {
       stripeId: subscriptionId,
       isActive: true,
-      participantId,
+      participant,
       subscriptionType: 'payAmount',
-      resourceId: '',
-      resourceIds: [],
+      resource: '',
+      resources: [],
       details: {
         startDate: startDateFromTimestamp,
         endDate: endDateFromTimestamp,
@@ -126,12 +122,12 @@ describe('Billing Stripe sync service test cases', function () {
     const mockStripeSubscription = {
       id: subscriptionId,
       status: 'active',
-      customer: customerId,
+      customer: stripeCustomerId,
       current_period_start,
       current_period_end,
     };
 
-    await stripeService.linkParticipantToCustomer(participantId, customerId);
+    await stripeService.linkParticipantToCustomer(participant, stripeCustomerId);
 
     stripeStub.subscriptions.retrieve
       .withArgs(subscriptionId)
@@ -179,6 +175,6 @@ describe('Billing Stripe sync service test cases', function () {
     ).to.be.true;
     removeSubscriptionStub.restore();
 
-    await stripeService.unlinkParticipantFromCustomer(customerId);
+    await stripeService.unlinkParticipantFromCustomer(stripeCustomerId);
   });
 });

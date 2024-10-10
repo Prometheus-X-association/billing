@@ -1,76 +1,154 @@
 import supertest from 'supertest';
 import { expect } from 'chai';
+import sinon from 'sinon';
 import { config } from '../../src/config/environment';
 import http from 'http';
 import { getApp } from '../../src/app';
-import { _logYellow } from '../utils/utils';
+import { Logger } from '../../src/libs/Logger';
+import Stripe from 'stripe';
+import StripeService from '../../src/services/StripeSubscriptionSyncService';
 
 let server: http.Server;
-let testProduct1: string | undefined;
+let testConnectedAccountId: string = 'acct_123456789';
+let testProductId: string;
+let stripeStub: Stripe;
 
 describe('Stripe Product CRUD API', function () {
-  const title = this.title;
   before(async function () {
-    _logYellow(`- ${title} running...`);
-
     const app = await getApp();
     await new Promise((resolve) => {
       const { port } = config;
       server = app.listen(port, () => {
-        console.log(`Test server is running on port ${port}`);
+        Logger.info({
+          message: `Test server is running on port ${port}`,
+        });
         resolve(true);
       });
     });
+
+    // Set up Stripe stub
+    stripeStub = {
+      products: {
+        create: sinon.stub(),
+        retrieve: sinon.stub(),
+        update: sinon.stub(),
+        del: sinon.stub(),
+        list: sinon.stub(),
+      },
+    } as unknown as Stripe;
+
+    const stripeServiceStub = sinon.createStubInstance(StripeService);
+    stripeServiceStub.getStripe.returns(stripeStub);
+    sinon
+      .stub(StripeService, 'retrieveServiceInstance')
+      .returns(stripeServiceStub as any);
   });
 
   after(async () => {
-    server.close();
+    if (server) {
+      server.close(() => {
+        Logger.info({
+          message: 'Test server closed',
+        });
+      });
+    }
+    sinon.restore();
   });
 
   it('should create a new product', async () => {
-    const response = await supertest(server).post('/api/stripe/products').send({
+    const fakeProduct = {
+      id: 'prod_123456789',
       name: 'New Test Product',
       description: 'A test product',
-    });
+    };
+    (stripeStub.products.create as sinon.SinonStub).resolves(fakeProduct);
+
+    const response = await supertest(server)
+      .post('/api/stripe/products')
+      .set('stripe-account', testConnectedAccountId)
+      .send({
+        name: 'New Test Product',
+        description: 'A test product',
+      });
+
     expect(response.status).to.equal(201);
     expect(response.body).to.have.property('id');
     expect(response.body).to.have.property('name', 'New Test Product');
-    testProduct1 = response.body.id;
+    testProductId = response.body.id;
   });
 
   it('should retrieve all products', async () => {
-    const response = await supertest(server).get('/api/stripe/products');
+    const fakeProductsList = {
+      data: [
+        {
+          id: testProductId,
+          name: 'New Test Product',
+          description: 'A test product',
+        },
+      ],
+      has_more: false,
+    };
+    (stripeStub.products.list as sinon.SinonStub).resolves(fakeProductsList);
+
+    const response = await supertest(server)
+      .get('/api/stripe/products')
+      .set('stripe-account', testConnectedAccountId);
+
     expect(response.status).to.equal(200);
     expect(response.body).to.be.an('array');
-    const product = response.body.find((p: any) => p.id === testProduct1);
+    const product = response.body.find((p: any) => p.id === testProductId);
     expect(product).to.exist;
   });
 
   it('should retrieve a product by ID', async () => {
-    const response = await supertest(server).get(
-      `/api/stripe/products/${testProduct1}`,
-    );
+    const fakeProduct = {
+      id: testProductId,
+      name: 'New Test Product',
+      description: 'A test product',
+    };
+    (stripeStub.products.retrieve as sinon.SinonStub).resolves(fakeProduct);
+
+    const response = await supertest(server)
+      .get(`/api/stripe/products/${testProductId}`)
+      .set('stripe-account', testConnectedAccountId);
+
     expect(response.status).to.equal(200);
-    expect(response.body).to.have.property('id', testProduct1);
+    expect(response.body).to.have.property('id', testProductId);
     expect(response.body).to.have.property('name');
   });
 
   it('should update an existing product', async () => {
+    const fakeUpdatedProduct = {
+      id: testProductId,
+      name: 'Updated Test Product',
+      description: 'An updated description',
+    };
+    (stripeStub.products.update as sinon.SinonStub).resolves(fakeUpdatedProduct);
+
     const response = await supertest(server)
-      .put(`/api/stripe/products/${testProduct1}`)
+      .put(`/api/stripe/products/${testProductId}`)
+      .set('stripe-account', testConnectedAccountId)
       .send({
         name: 'Updated Test Product',
         description: 'An updated description',
       });
+
     expect(response.status).to.equal(200);
-    expect(response.body).to.have.property('id', testProduct1);
+    expect(response.body).to.have.property('id', testProductId);
     expect(response.body).to.have.property('name', 'Updated Test Product');
   });
 
   it('should deactivate a product', async () => {
-    const response = await supertest(server).delete(
-      `/api/stripe/products/${testProduct1}`,
-    );
+    const fakeDeletedProduct = {
+      id: testProductId,
+      deleted: true,
+    };
+    (stripeStub.products.del as sinon.SinonStub).resolves(fakeDeletedProduct);
+
+    const response = await supertest(server)
+      .delete(`/api/stripe/products/${testProductId}`)
+      .set('stripe-account', testConnectedAccountId);
+
     expect(response.status).to.equal(200);
     expect(response.body).to.have.property(
       'message',
@@ -79,9 +157,12 @@ describe('Stripe Product CRUD API', function () {
   });
 
   it('should return 404 for non-existent product', async () => {
-    const response = await supertest(server).get(
-      '/api/stripe/products/non_existent_id',
-    );
+    (stripeStub.products.retrieve as sinon.SinonStub).rejects(new Error('Product not found'));
+
+    const response = await supertest(server)
+      .get('/api/stripe/products/non_existent_id')
+      .set('stripe-account', testConnectedAccountId);
+
     expect(response.status).to.equal(404);
     expect(response.body).to.have.property('message', 'Product not found.');
   });

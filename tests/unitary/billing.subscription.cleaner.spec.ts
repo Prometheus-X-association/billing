@@ -5,16 +5,13 @@ import sinon from 'sinon';
 import SubscriptionModel from '../../src/models/SubscriptionModel';
 import { BillingSubscriptionCleanRefresh } from '../../src/services/BillingSubscriptionCleanRefresh';
 import BillingSubscriptionSyncService from '../../src/services/BillingSubscriptionSyncService';
-import { _logYellow } from '../utils/utils';
 
 describe('BillingSubscriptionCleanRefresh Service', function () {
-  const title = this.title;
   let mongoServer: MongoMemoryServer;
   let syncService: BillingSubscriptionSyncService;
   let billingCleanRefresh: BillingSubscriptionCleanRefresh;
 
   before(async () => {
-    _logYellow(`- ${title} running...`);
     this.timeout(10000);
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
@@ -45,7 +42,7 @@ describe('BillingSubscriptionCleanRefresh Service', function () {
           startDate: new Date(now.getTime() - 86400000), // 1 day
           endDate: new Date(now.getTime() - 1000), // 1 second
         },
-        participantId: 'participant_a',
+        participant: 'http://catalog.api.com/participant_a',
       },
       {
         isActive: true,
@@ -55,7 +52,7 @@ describe('BillingSubscriptionCleanRefresh Service', function () {
           startDate: new Date(now.getTime() - 86400000),
           endDate: new Date(now.getTime() + 86400000),
         },
-        participantId: 'participant_b',
+        participant: 'http://catalog.api.com/participant_b',
       },
     ];
 
@@ -83,7 +80,7 @@ describe('BillingSubscriptionCleanRefresh Service', function () {
           startDate: new Date(now.getTime() - 86400000),
           endDate: new Date(now.getTime() + 86400000),
         },
-        participantId: 'participant_c',
+        participant: 'http://catalog.api.com/participant_c',
       },
       {
         isActive: true,
@@ -93,7 +90,7 @@ describe('BillingSubscriptionCleanRefresh Service', function () {
           startDate: new Date(now.getTime() - 86400000),
           endDate: new Date(now.getTime() + 86400000),
         },
-        participantId: 'participant_d',
+        participant: 'http://catalog.api.com/participant_d',
       },
     ];
 

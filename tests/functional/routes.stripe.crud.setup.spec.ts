@@ -5,6 +5,8 @@ import { getApp } from '../../src/app';
 import sinon from 'sinon';
 import Stripe from 'stripe';
 import StripeService from '../../src/services/StripeSubscriptionSyncService';
+import { config } from '../../src/config/environment';
+import { Logger } from '../../src/libs/Logger';
 
 let server: http.Server;
 const testStripeAccountId: string = 'acct_50726F6D6574686575732058';
@@ -16,8 +18,11 @@ describe('Stripe Setup Intent API', function () {
   before(async function () {
     const app = await getApp();
     await new Promise((resolve) => {
-      server = app.listen(3000, () => {
-        console.log(`Test server is running on port 3000`);
+      const { port } = config;
+      server = app.listen(port, () => {
+        Logger.info({
+          message: `Test server is running on port ${port}`,
+        });
         resolve(true);
       });
     });
@@ -40,8 +45,14 @@ describe('Stripe Setup Intent API', function () {
   });
 
   after(() => {
-    server.close();
-    sinon.restore();
+    if (server) {
+      server.close(() => {
+        Logger.info({
+          message: 'Test server closed',
+        });
+      });
+      sinon.restore();
+    }
   });
 
   it('should create a new setup intent', async () => {
