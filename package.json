@@ -1,6 +1,6 @@
 {
   "name": "ptx-billing-component",
-  "version": "1.1.0",
+  "version": "1.0.0-beta",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
