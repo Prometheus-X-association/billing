@@ -116,3 +116,26 @@ export const createLoginLink = async (req: Request, res: Response) => {
     return res.status(500).json({ message: (error as Error).message });
   }
 };
+
+export const createAccountLink = async (req: Request, res: Response) => {
+  const { accountId } = req.params;
+  try {
+    const stripeService =
+      StripeConnectedAccountService.retrieveServiceInstance();
+    req.body.account = accountId;
+    const accountLink = await stripeService.createAccountLinks(req.body);
+    if (accountLink) {
+      return res.status(200).json(accountLink);
+    } else {
+      return res
+        .status(404)
+        .json({ message: 'Failed to create account link for the account.' });
+    }
+  } catch (error) {
+    Logger.error({
+      location: (error as Error).stack,
+      message: `Error creating account link: ${(error as Error).message}`,
+    });
+    return res.status(500).json({ message: (error as Error).message });
+  }
+}

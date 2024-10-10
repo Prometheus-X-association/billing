@@ -115,6 +115,26 @@ class StripeConnectedAccountService {
       return null;
     }
   }
+
+  public async createAccountLinks(
+    accountLinkData: Stripe.AccountLinkCreateParams,
+  ): Promise<Stripe.AccountLink | null> {
+    try {
+      if (!this.stripeService) {
+        throw new Error('Stripe instance is not initialized.');
+      }
+      const accountLink = await this.stripeService.accountLinks.create(
+        accountLinkData,
+      );
+      return accountLink;
+    } catch (error) {
+      Logger.error({
+        location: (error as Error).stack,
+        message: `Error creating account link: ${(error as Error).message}`,
+      });
+      return null;
+    }
+  }
 }
 
 export default StripeConnectedAccountService;

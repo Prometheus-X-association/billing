@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  createAccountLink,
   createConnectedAccount,
   createLoginLink,
   deleteConnectedAccount,
@@ -153,5 +154,46 @@ router.delete('/accounts/:accountId', deleteConnectedAccount);
  *         description: Error creating login link.
  */
 router.post('/accounts/:accountId/login_links', createLoginLink);
+
+/**
+ * @swagger
+ * /api/stripe/accounts/{accountId}/account_links:
+ *   post:
+ *     summary: Create a account link for a connected Stripe account
+ *     description: Generate a account link for a specific connected Stripe account to onboard.
+ *     tags:
+ *       - Stripe Connected Account
+ *     parameters:
+ *       - name: accountId
+ *         in: path
+ *         required: true
+ *         description: The ID of the Stripe account for which the login link will be generated.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refresh_url:
+ *                 type: string
+ *                 description: The URL to redirect to after the account link is clicked.
+ *               return_url:
+ *                 type: string
+ *                 description: The URL to redirect to after the account link is clicked.
+ *               type:
+ *                 type: string
+ *                 description: The type of the account link, can be account_onboarding or account_update.
+ *     responses:
+ *       200:
+ *         description: Account link generated successfully.
+ *       404:
+ *         description: Failed to create account link for the account.
+ *       500:
+ *         description: Error creating account link.
+ */
+router.post('/accounts/:accountId/account_links', createAccountLink);
 
 export default router;
