@@ -2,13 +2,13 @@ import { Schema, model, Document } from 'mongoose';
 
 interface IPrice extends Document {
     stripeId: string;
-    customerId: string;
+    stripeCustomerId: string;
 }
 
 export interface IProductOfferMap extends Document {
     stripeId: string;
-    participantId: string;
-    offerId: string;
+    participant: string;
+    offer: string;
     prices?: [IPrice]
     defaultPriceId: string;
 }
@@ -16,12 +16,12 @@ export interface IProductOfferMap extends Document {
 const ProductOfferMapSchema = new Schema<IProductOfferMap>({
     stripeId: { type: String, required: true, unique: true },
     defaultPriceId: { type: String, required: true, unique: true },
-    offerId: { type: String, required: true, unique: true },
-    participantId: { type: String, required: true },
+    offer: { type: String, required: true, unique: true },
+    participant: { type: String, required: true },
     prices: [
         {
             stripeId: { type: String, required: true, unique: true },
-            customerId: { type: String, required: true, unique: true },
+            stripeCustomerId: { type: String, required: true },
         }
     ]
 });

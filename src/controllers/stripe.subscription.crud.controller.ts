@@ -3,20 +3,22 @@ import StripeSubscriptionCrudService from '../services/StripeSubscriptionCrudSer
 import { Logger } from '../libs/Logger';
 
 export const createSubscription = async (req: Request, res: Response) => {
-  const { customerId, priceId } = req.body;
-  const stripeAccount = req.headers['stripe-account'] as string
-  if (!customerId || !priceId || !stripeAccount) {
+  const { customerId, priceId, paymentMethodId, metadata } = req.body;
+  const stripeAccount = req.headers['stripe-account'] as string;
+  if (!customerId || !priceId || !stripeAccount || !metadata) {
     return res
       .status(400)
-      .json({ message: 'customerId, connectedAccountId and priceId are required' });
+      .json({ message: 'customerId, stripeAccount, priceId and metadata are required' });
   }
   try {
     const stripeCrudService =
       StripeSubscriptionCrudService.retrieveServiceInstance();
     const newSubscription = await stripeCrudService.createSubscription(
-      stripeAccount,
       customerId,
       priceId,
+      { stripeAccount },
+      metadata,
+      paymentMethodId
     );
 
     if (newSubscription) {
@@ -40,7 +42,9 @@ export const getAllSubscriptions = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeSubscriptionCrudService.retrieveServiceInstance();
-    const subscriptions = await stripeCrudService.listSubscriptions();
+    const subscriptions = await stripeCrudService.listSubscriptions(
+      {stripeAccount: req.headers['stripe-account'] as string},
+    );
 
     if (subscriptions && subscriptions.length > 0) {
       return res.status(200).json(subscriptions);
@@ -63,7 +67,10 @@ export const getSubscription = async (req: Request, res: Response) => {
     const stripeCrudService =
       StripeSubscriptionCrudService.retrieveServiceInstance();
     const subscription =
-      await stripeCrudService.getSubscription(subscriptionId);
+      await stripeCrudService.getSubscription(
+        subscriptionId,
+        {stripeAccount: req.headers['stripe-account'] as string},
+      );
 
     if (subscription) {
       return res.status(200).json(subscription);
@@ -89,6 +96,7 @@ export const updateSubscription = async (req: Request, res: Response) => {
     const updatedSubscription = await stripeCrudService.updateSubscription(
       subscriptionId,
       updates,
+      {stripeAccount: req.headers['stripe-account'] as string},
     );
 
     if (updatedSubscription) {
@@ -112,7 +120,10 @@ export const cancelSubscription = async (req: Request, res: Response) => {
     const stripeCrudService =
       StripeSubscriptionCrudService.retrieveServiceInstance();
     const canceledSubscription =
-      await stripeCrudService.cancelSubscription(subscriptionId);
+      await stripeCrudService.cancelSubscription(
+        subscriptionId,
+        {stripeAccount: req.headers['stripe-account'] as string},
+      );
 
     if (canceledSubscription) {
       return res

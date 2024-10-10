@@ -27,22 +27,18 @@ class StripePriceCrudService {
   }
 
   public async createPrice(
-    priceData: Stripe.PriceCreateParams & {connectedAccountId?: string},
+    priceData: Stripe.PriceCreateParams,
+    options?: Stripe.RequestOptions,
   ): Promise<Stripe.Price | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      if(!priceData.connectedAccountId){
-        throw new Error('connectedAccountId body params is needed.');
+      if(!options?.stripeAccount){
+        throw new Error('stripeAccount header is needed.');
       }
 
-      const stripeAccount = priceData.connectedAccountId;
-
-      if(priceData.connectedAccountId){
-        delete priceData.connectedAccountId;
-      }
-      const price = await this.stripeService.prices.create(priceData, {stripeAccount});
+      const price = await this.stripeService.prices.create(priceData, options);
       return price;
     } catch (error) {
       const err = error as Error;
@@ -54,12 +50,12 @@ class StripePriceCrudService {
     }
   }
 
-  public async listPrices(): Promise<Stripe.Price[] | null> {
+  public async listPrices(options?: Stripe.RequestOptions): Promise<Stripe.Price[] | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const prices = await this.stripeService.prices.list();
+      const prices = await this.stripeService.prices.list(options);
       return prices.data;
     } catch (error) {
       const err = error as Error;
@@ -71,12 +67,12 @@ class StripePriceCrudService {
     }
   }
 
-  public async getPrice(priceId: string): Promise<Stripe.Price | null> {
+  public async getPrice(priceId: string, options?: Stripe.RequestOptions): Promise<Stripe.Price | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const price = await this.stripeService.prices.retrieve(priceId);
+      const price = await this.stripeService.prices.retrieve(priceId, options);
       return price;
     } catch (error) {
       const err = error as Error;
@@ -91,6 +87,7 @@ class StripePriceCrudService {
   public async updatePrice(
     priceId: string,
     updates: Stripe.PriceUpdateParams,
+    options?: Stripe.RequestOptions,
   ): Promise<Stripe.Price | null> {
     try {
       if (!this.stripeService) {
@@ -99,6 +96,7 @@ class StripePriceCrudService {
       const updatedPrice = await this.stripeService.prices.update(
         priceId,
         updates,
+        options,
       );
       return updatedPrice;
     } catch (error) {
@@ -111,14 +109,14 @@ class StripePriceCrudService {
     }
   }
 
-  public async deactivatePrice(priceId: string): Promise<Stripe.Price | null> {
+  public async deactivatePrice(priceId: string, options?: Stripe.RequestOptions): Promise<Stripe.Price | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
       const deactivatedPrice = await this.stripeService.prices.update(priceId, {
         active: false,
-      });
+      }, options);
       return deactivatedPrice;
     } catch (error) {
       const err = error as Error;

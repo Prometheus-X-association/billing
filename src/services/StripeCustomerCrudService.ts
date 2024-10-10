@@ -23,17 +23,14 @@ class StripeCustomerCrudService {
   }
 
   public async createCustomer(
-    customerData: Stripe.CustomerCreateParams & {connectedAccountId?: string},
+    customerData: Stripe.CustomerCreateParams,
+    options?: Stripe.RequestOptions,
   ): Promise<Stripe.Customer | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const stripeConnect = customerData.connectedAccountId;
-
-      if(customerData.connectedAccountId) delete customerData.connectedAccountId;
-
-      return await this.stripeService.customers.create(customerData, {stripeAccount: stripeConnect});
+      return await this.stripeService.customers.create(customerData, options);
     } catch (error) {
       const err = error as Error;
       Logger.error({
@@ -44,12 +41,12 @@ class StripeCustomerCrudService {
     }
   }
 
-  public async listCustomers(): Promise<Stripe.Customer[] | null> {
+  public async listCustomers(options?: Stripe.RequestOptions): Promise<Stripe.Customer[] | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const customers = await this.stripeService.customers.list();
+      const customers = await this.stripeService.customers.list(options);
       return customers.data;
     } catch (error) {
       const err = error as Error;
@@ -63,13 +60,14 @@ class StripeCustomerCrudService {
 
   public async getCustomer(
     customerId: string,
+    options?: Stripe.RequestOptions,
   ): Promise<Stripe.Customer | Stripe.DeletedCustomer | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
 
-      const customer = await this.stripeService.customers.retrieve(customerId);
+      const customer = await this.stripeService.customers.retrieve(customerId, options);
       if (customer.deleted) {
         return customer as Stripe.DeletedCustomer;
       } else {
@@ -88,6 +86,7 @@ class StripeCustomerCrudService {
   public async updateCustomer(
     customerId: string,
     updates: Stripe.CustomerUpdateParams,
+    options?: Stripe.RequestOptions,
   ): Promise<Stripe.Customer | null> {
     try {
       if (!this.stripeService) {
@@ -96,6 +95,7 @@ class StripeCustomerCrudService {
       const updatedCustomer = await this.stripeService.customers.update(
         customerId,
         updates,
+        options,
       );
       return updatedCustomer;
     } catch (error) {
@@ -108,13 +108,13 @@ class StripeCustomerCrudService {
     }
   }
 
-  public async deleteCustomer(customerId: string): Promise<boolean> {
+  public async deleteCustomer(customerId: string, options?: Stripe.RequestOptions): Promise<boolean> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
       const deletedCustomer =
-        await this.stripeService.customers.del(customerId);
+        await this.stripeService.customers.del(customerId, options);
       return deletedCustomer.deleted;
     } catch (error) {
       const err = error as Error;

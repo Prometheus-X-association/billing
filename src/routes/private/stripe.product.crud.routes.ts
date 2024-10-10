@@ -56,6 +56,12 @@ router.post('/products', createProduct);
  *     description: Retrieve a list of all products available in Stripe.
  *     tags:
  *       - Stripe Product
+ *     parameters:
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: A list of products.
@@ -96,6 +102,11 @@ router.get('/products', getAllProducts);
  *         description: The ID of the product to retrieve.
  *         schema:
  *           type: string
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: Product retrieved successfully.
@@ -134,6 +145,11 @@ router.get('/products/:productId', getProduct);
  *         description: The ID of the product to update.
  *         schema:
  *           type: string
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -172,6 +188,11 @@ router.put('/products/:productId', updateProduct);
  *         description: The ID of the product to delete.
  *         schema:
  *           type: string
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: Product deleted successfully.

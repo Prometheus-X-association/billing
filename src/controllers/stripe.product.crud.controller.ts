@@ -7,10 +7,7 @@ export const createProduct = async (req: Request, res: Response) => {
     const stripeCrudService =
       StripeProductCrudService.retrieveServiceInstance();
 
-    const newProduct = await stripeCrudService.createProduct({
-      productData: req.body,
-      stripeAccount: req.headers['stripe-account'] as string,
-    });
+    const newProduct = await stripeCrudService.createProduct(req.body, {stripeAccount: req.headers['stripe-account'] as string});
 
     if (newProduct) {
       return res.status(201).json(newProduct);
@@ -31,7 +28,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeProductCrudService.retrieveServiceInstance();
-    const products = await stripeCrudService.listProducts();
+    const products = await stripeCrudService.listProducts({stripeAccount: req.headers['stripe-account'] as string});
 
     if (products && products.length > 0) {
       return res.status(200).json(products);
@@ -53,7 +50,7 @@ export const getProduct = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeProductCrudService.retrieveServiceInstance();
-    const product = await stripeCrudService.getProduct(productId);
+    const product = await stripeCrudService.getProduct(productId, {stripeAccount: req.headers['stripe-account'] as string});
 
     if (product) {
       return res.status(200).json(product);
@@ -79,6 +76,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     const updatedProduct = await stripeCrudService.updateProduct(
       productId,
       updates,
+      {stripeAccount: req.headers['stripe-account'] as string}
     );
 
     if (updatedProduct) {
@@ -101,7 +99,10 @@ export const deleteProduct = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeProductCrudService.retrieveServiceInstance();
-    const isDeleted = await stripeCrudService.deleteProduct(productId);
+    const isDeleted = await stripeCrudService.deleteProduct(
+      productId,
+      {stripeAccount: req.headers['stripe-account'] as string}
+      );
 
     if (isDeleted) {
       return res.status(200).json({ message: 'Product deleted successfully.' });

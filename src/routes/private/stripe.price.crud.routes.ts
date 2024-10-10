@@ -15,6 +15,13 @@ const router = Router();
  *   post:
  *     summary: Create a new price
  *     description: Create a new price for a product in Stripe.
+ *     parameters:
+ *       - name: stripe-account
+ *         in: header
+ *         description: Stripe account ID
+ *         required: true
+ *         schema:
+ *           type: string
  *     tags: [Prices]
  *     requestBody:
  *       required: true
@@ -42,10 +49,6 @@ const router = Router();
  *                 type: string
  *                 description: ID of the product associated with the price.
  *                 example: prod_test_1
- *               connectedAccountId:
- *                 type: string
- *                 description: ID of the connected account associated with the product.
- *                 example: acct_0000
  *     responses:
  *       201:
  *         description: Price created successfully.
@@ -64,6 +67,13 @@ router.post('/prices', createPrice);
  *   get:
  *     summary: Get all prices
  *     description: Retrieve a list of all prices.
+ *     parameters:
+ *       - name: stripe-account
+ *         in: header
+ *         description: Stripe account ID
+ *         required: true
+ *         schema:
+ *           type: string
  *     tags: [Prices]
  *     responses:
  *       200:
@@ -95,6 +105,12 @@ router.get('/prices', getAllPrices);
  *           type: string
  *         required: true
  *         description: ID of the price to retrieve.
+ *       - name: stripe-account
+ *         in: header
+ *         description: Stripe account ID
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Price retrieved successfully.
@@ -123,6 +139,12 @@ router.get('/prices/:priceId', getPrice);
  *           type: string
  *         required: true
  *         description: ID of the price to update.
+ *       - name: stripe-account
+ *         in: header
+ *         description: Stripe account ID
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -162,6 +184,12 @@ router.put('/prices/:priceId', updatePrice);
  *           type: string
  *         required: true
  *         description: ID of the price to deactivate.
+ *       - name: stripe-account
+ *         in: header
+ *         description: Stripe account ID
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Price deactivated successfully.

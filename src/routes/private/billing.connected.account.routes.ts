@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import {
-    getConnectedAccountByConnectedAccountId,
+    getConnectedAccountByStripeAccount,
     getConnectedAccountById,
-    getConnectedAccountByParticipantId,
+    getConnectedAccountByParticipant,
     getConnectedAccounts
 } from "../../controllers/billing.connected.account.controller";
+import { base64Checker } from '../middlewares/base64Checker';
 
 const router = Router();
 
@@ -53,17 +54,17 @@ router.get('/:id', getConnectedAccountById);
 
 /**
  * @swagger
- * /api/connected-accounts/participant/{participantId}:
+ * /api/connected-accounts/participant/{participant}:
  *   get:
- *     summary: Retrieve a billing connected account by participantId
- *     description: Retrieve a billing connected account by participantId.
+ *     summary: Retrieve a billing connected account by participant
+ *     description: Retrieve a billing connected account by participant.
  *     tags:
  *       - Connected Accounts
  *     parameters:
- *       - name: participantId
+ *       - name: participant
  *         in: path
  *         required: true
- *         description: The participantId of the billing connected account.
+ *         description: The participant of the billing connected account.
  *         schema:
  *           type: string
  *     responses:
@@ -74,21 +75,21 @@ router.get('/:id', getConnectedAccountById);
  *       500:
  *         description: Error retrieving connected account.
  */
-router.get('/participant/:participantId', getConnectedAccountByParticipantId);
+router.get('/participant/:participant', base64Checker('participant'), getConnectedAccountByParticipant);
 
 /**
  * @swagger
- * /api/connected-accounts/connected-account/{connectedAccountId}:
+ * /api/connected-accounts/connected-account/{stripeAccount}:
  *   get:
- *     summary: Retrieve a billing connected account by connectedAccountId
- *     description: Retrieve a billing connected account by connectedAccountId.
+ *     summary: Retrieve a billing connected account by stripeAccount
+ *     description: Retrieve a billing connected account by stripeAccount.
  *     tags:
  *       - Connected Accounts
  *     parameters:
- *       - name: connectedAccountId
+ *       - name: stripeAccount
  *         in: path
  *         required: true
- *         description: The customerId of the billing connected account.
+ *         description: The stripe Account.
  *         schema:
  *           type: string
  *     responses:
@@ -99,7 +100,6 @@ router.get('/participant/:participantId', getConnectedAccountByParticipantId);
  *       500:
  *         description: Error retrieving connected account.
  */
-router.get('/connected-account/:connectedAccountId', getConnectedAccountByConnectedAccountId);
-
+router.get('/connected-account/:stripeAccount', getConnectedAccountByStripeAccount);
 
 export default router;

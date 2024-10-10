@@ -5,10 +5,10 @@ import BillingProductService from "../services/BillingProductService";
 const billingProductService =
     BillingProductService.retrieveServiceInstance();
 
-export const listProductsByParticipantId = async (req: Request, res: Response) => {
+export const listProductsByParticipant = async (req: Request, res: Response) => {
     try {
-        const { participantId } = req.params;
-        const products = await billingProductService.listProductsByParticipantId(participantId);
+        const { participant } = req.params;
+        const products = await billingProductService.listProductsByParticipant(participant);
 
         if (products) {
             return res.status(200).json(products);
@@ -45,11 +45,11 @@ export const getProductById = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const { participantId, stripeId, defaultPriceId, offerId } = req.body;
-        const product = await billingProductService.createProduct({participantId, stripeId, defaultPriceId, offerId});
+        const { participant, stripeId, defaultPriceId, offer } = req.body;
+        const product = await billingProductService.createProduct({participant, stripeId, defaultPriceId, offer});
 
         if (product) {
-            return res.status(200).json(product);
+            return res.status(201).json(product);
         } else {
             return res.status(404).json({ message: 'Product not found.' });
         }
@@ -65,10 +65,10 @@ export const createProduct = async (req: Request, res: Response) => {
 export const addPrice = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { customerId, stripeId } = req.body;
+        const { stripeCustomerId, stripeId } = req.body;
         const product = await billingProductService.addPrice({
             id,
-            customerId,
+            stripeCustomerId,
             stripeId
         });
 

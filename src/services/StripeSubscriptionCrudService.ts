@@ -28,9 +28,11 @@ class StripeSubscriptionCrudService {
   }
 
   public async createSubscription(
-    stripeAccount: string,
     customerId: string,
     priceId: string,
+    options: Stripe.RequestOptions,
+    metadata: Stripe.MetadataParam,
+    paymentMethodId?: string,
   ): Promise<Stripe.Subscription | null> {
     try {
       if (!this.stripeService) {
@@ -39,9 +41,9 @@ class StripeSubscriptionCrudService {
       return await this.stripeService.subscriptions.create({
         customer: customerId,
         items: [{price: priceId}],
-      }, {
-        stripeAccount
-      });
+        default_payment_method: paymentMethodId,
+        metadata,
+      }, options);
     } catch (error) {
       const err = error as Error;
       Logger.error({
@@ -52,12 +54,12 @@ class StripeSubscriptionCrudService {
     }
   }
 
-  public async listSubscriptions(): Promise<Stripe.Subscription[] | null> {
+  public async listSubscriptions(options: Stripe.RequestOptions): Promise<Stripe.Subscription[] | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const subscriptions = await this.stripeService.subscriptions.list();
+      const subscriptions = await this.stripeService.subscriptions.list(options);
       return subscriptions.data;
     } catch (error) {
       const err = error as Error;
@@ -71,13 +73,14 @@ class StripeSubscriptionCrudService {
 
   public async getSubscription(
     subscriptionId: string,
+    options: Stripe.RequestOptions,
   ): Promise<Stripe.Subscription | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
       const subscription =
-        await this.stripeService.subscriptions.retrieve(subscriptionId);
+        await this.stripeService.subscriptions.retrieve(subscriptionId, options);
       return subscription;
     } catch (error) {
       const err = error as Error;
@@ -92,6 +95,7 @@ class StripeSubscriptionCrudService {
   public async updateSubscription(
     subscriptionId: string,
     updates: Stripe.SubscriptionUpdateParams,
+    options: Stripe.RequestOptions,
   ): Promise<Stripe.Subscription | null> {
     try {
       if (!this.stripeService) {
@@ -100,6 +104,7 @@ class StripeSubscriptionCrudService {
       const updatedSubscription = await this.stripeService.subscriptions.update(
         subscriptionId,
         updates,
+        options
       );
       return updatedSubscription;
     } catch (error) {
@@ -114,12 +119,13 @@ class StripeSubscriptionCrudService {
 
   public async cancelSubscription(
     subscriptionId: string,
+    options: Stripe.RequestOptions,
   ): Promise<Stripe.Subscription | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      return await this.stripeService.subscriptions.cancel(subscriptionId);
+      return await this.stripeService.subscriptions.cancel(subscriptionId, options);
     } catch (error) {
       const err = error as Error;
       Logger.error({

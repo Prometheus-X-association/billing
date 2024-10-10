@@ -3,24 +3,25 @@ import {
     addPrice,
     createProduct,
     getProductById,
-    listProductsByParticipantId
+    listProductsByParticipant
 } from "../../controllers/billing.product.controller";
+import { base64Checker } from '../middlewares/base64Checker';
 
 const router = Router();
 
 /**
  * @swagger
- * /api/products/participant/{participantId}:
+ * /api/products/participant/{participant}:
  *   get:
- *     summary: Retrieve all billing product by participantId
- *     description: Retrieve all billing product by participantId.
+ *     summary: Retrieve all billing product by participant
+ *     description: Retrieve all billing product by participant.
  *     tags:
  *       - Products
  *     parameters:
- *       - name: participantId
+ *       - name: participant
  *         in: path
  *         required: true
- *         description: The participantId of the billing product.
+ *         description: The participant of the billing product.
  *         schema:
  *           type: string
  *     responses:
@@ -31,7 +32,7 @@ const router = Router();
  *       500:
  *         description: Error retrieving products.
  */
-router.get('/participant/:participantId', listProductsByParticipantId);
+router.get('/participant/:participant', base64Checker('participant'), listProductsByParticipant);
 
 /**
  * @swagger
@@ -73,7 +74,7 @@ router.get('/:id', getProductById);
  *           schema:
  *             type: object
  *             properties:
- *               participantId:
+ *               participant:
  *                 type: string
  *                 description: The participant.
  *               stripeId:
@@ -82,7 +83,7 @@ router.get('/:id', getProductById);
  *               defaultPriceId:
  *                 type: string
  *                 description: default price id set by the participant.
- *               offerId:
+ *               offer:
  *                 type: string
  *                 description: offer id from the system.
  *     responses:

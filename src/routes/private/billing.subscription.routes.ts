@@ -14,12 +14,13 @@ import {
   getValidActiveUsageCountSubscriptions,
   getValidActiveLimitDateSubscriptions,
 } from '../../controllers/billing.subscription.controller';
+import { base64Checker } from '../middlewares/base64Checker';
 
 const router = Router();
 
 /**
  * @swagger
- * /api/subscriptions/for/participant/{participantId}:
+ * /api/subscriptions/for/participant/{participant}:
  *   get:
  *     summary: Get subscriptions for a participant
  *     description: Retrieve all subscriptions for a specific participant.
@@ -27,7 +28,7 @@ const router = Router();
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
@@ -45,13 +46,14 @@ const router = Router();
  *         description: Error retrieving participant subscriptions
  */
 router.get(
-  '/subscriptions/for/participant/:participantId',
+  '/subscriptions/for/participant/:participant',
+  base64Checker('participant'),
   getParticipantSubscriptions,
 );
 
 /**
  * @swagger
- * /api/subscriptions/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get subscriptions for a participant's resource
  *     description: Retrieve all subscriptions for a participant's specific resource.
@@ -59,13 +61,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -83,13 +85,15 @@ router.get(
  *         description: Error retrieving resource subscriptions
  */
 router.get(
-  '/subscriptions/for/resource/:participantId/:resourceId',
+  '/subscriptions/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getParticipantResourceSubscriptions,
 );
 
 /**
  * @swagger
- * /api/subscriptions/limitdate/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/limitdate/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get limitDate subscriptions for a resource
  *     description: Retrieve all subscriptions of type limitDate for a participant's resource.
@@ -97,13 +101,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -121,13 +125,15 @@ router.get(
  *         description: Error retrieving limitDate subscriptions
  */
 router.get(
-  '/subscriptions/limitdate/for/resource/:participantId/:resourceId',
+  '/subscriptions/limitdate/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getLimitDateSubscriptions,
 );
 
 /**
  * @swagger
- * /api/subscriptions/pay/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/pay/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get payAmount subscriptions for a resource
  *     description: Retrieve all subscriptions of type payAmount for a participant's resource.
@@ -135,13 +141,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -159,13 +165,15 @@ router.get(
  *         description: Error retrieving payAmount subscriptions
  */
 router.get(
-  '/subscriptions/pay/for/resource/:participantId/:resourceId',
+  '/subscriptions/pay/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getPayAmountSubscriptions,
 );
 
 /**
  * @swagger
- * /api/subscriptions/usage/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/usage/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get usageCount subscriptions for a resource
  *     description: Retrieve all subscriptions of type usageCount for a participant's resource.
@@ -173,13 +181,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -197,13 +205,15 @@ router.get(
  *         description: Error retrieving usageCount subscriptions
  */
 router.get(
-  '/subscriptions/usage/for/resource/:participantId/:resourceId',
+  '/subscriptions/usage/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getUsageCountSubscriptions,
 );
 
 /**
  * @swagger
- * /api/subscriptions/lastactive/usage/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/lastactive/usage/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get last active usageCount subscription for a resource
  *     description: Retrieve the last active usageCount subscription for a participant's resource.
@@ -211,13 +221,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -238,13 +248,15 @@ router.get(
  *         description: Error retrieving last active usageCount subscription
  */
 router.get(
-  '/subscriptions/lastactive/usage/for/resource/:participantId/:resourceId',
+  '/subscriptions/lastactive/usage/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getLastActiveUsageCount,
 );
 
 /**
  * @swagger
- * /api/subscriptions/lastactive/pay/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/lastactive/pay/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get last active payAmount subscription for a resource
  *     description: Retrieve the last active payAmount subscription for a participant's resource.
@@ -252,13 +264,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -279,13 +291,15 @@ router.get(
  *         description: Error retrieving last active payAmount subscription
  */
 router.get(
-  '/subscriptions/lastactive/pay/for/resource/:participantId/:resourceId',
+  '/subscriptions/lastactive/pay/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getLastActivePayAmount,
 );
 
 /**
  * @swagger
- * /api/subscriptions/lastactive/limitdate/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/lastactive/limitdate/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get last active limitDate subscription for a resource
  *     description: Retrieve the last active limitDate subscription for a participant's resource.
@@ -293,13 +307,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -321,13 +335,15 @@ router.get(
  *         description: Error retrieving last active limitDate subscription
  */
 router.get(
-  '/subscriptions/lastactive/limitdate/for/resource/:participantId/:resourceId',
+  '/subscriptions/lastactive/limitdate/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getLastActiveLimitDate,
 );
 
 /**
  * @swagger
- * /api/subscriptions/validactive/usage/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/validactive/usage/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get valid active usageCount subscriptions for a resource
  *     description: Retrieve all valid active usageCount subscriptions for a participant's resource.
@@ -335,13 +351,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -364,13 +380,15 @@ router.get(
  *         description: Error retrieving valid active usageCount subscriptions
  */
 router.get(
-  '/subscriptions/validactive/usage/for/resource/:participantId/:resourceId',
+  '/subscriptions/validactive/usage/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getValidActiveUsageCountSubscriptions,
 );
 
 /**
  * @swagger
- * /api/subscriptions/validactive/pay/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/validactive/pay/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get valid active payAmount subscriptions for a resource
  *     description: Retrieve all valid active payAmount subscriptions for a participant's resource.
@@ -378,13 +396,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -407,13 +425,15 @@ router.get(
  *         description: Error retrieving valid active payAmount subscriptions
  */
 router.get(
-  '/subscriptions/validactive/pay/for/resource/:participantId/:resourceId',
+  '/subscriptions/validactive/pay/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getValidActivePayAmountSubscriptions,
 );
 
 /**
  * @swagger
- * /api/subscriptions/validactive/limitdate/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/validactive/limitdate/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Get valid active limitDate subscriptions for a resource
  *     description: Retrieve all valid active limitDate subscriptions for a participant's resource.
@@ -421,13 +441,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -451,13 +471,15 @@ router.get(
  *         description: Error retrieving valid active limitDate subscriptions
  */
 router.get(
-  '/subscriptions/validactive/limitdate/for/resource/:participantId/:resourceId',
+  '/subscriptions/validactive/limitdate/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   getValidActiveLimitDateSubscriptions,
 );
 
 /**
  * @swagger
- * /api/subscriptions/hasactive/for/resource/{participantId}/{resourceId}:
+ * /api/subscriptions/hasactive/for/resource/{participant}/{resource}:
  *   get:
  *     summary: Check if a participant has an active subscription for a specific resource
  *     description: Verifies if a participant has an active subscription for a given resource by their IDs.
@@ -465,13 +487,13 @@ router.get(
  *       - Subscriptions
  *     parameters:
  *       - in: path
- *         name: participantId
+ *         name: participant
  *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the participant.
  *       - in: path
- *         name: resourceId
+ *         name: resource
  *         required: true
  *         schema:
  *           type: string
@@ -492,7 +514,9 @@ router.get(
  *         description: Error checking active subscription
  */
 router.get(
-  '/subscriptions/hasactive/for/resource/:participantId/:resourceId',
+  '/subscriptions/hasactive/for/resource/:participant/:resource',
+  base64Checker('participant'),
+  base64Checker('resource'),
   hasActiveSubscriptionFor,
 );
 
@@ -516,9 +540,9 @@ router.get(
  *                 properties:
  *                   subscriptionId:
  *                     type: string
- *                   participantId:
+ *                   participant:
  *                     type: string
- *                   resourceId:
+ *                   resource:
  *                     type: string
  *                   isActive:
  *                     type: boolean

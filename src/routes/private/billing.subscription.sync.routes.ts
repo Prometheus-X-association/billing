@@ -26,17 +26,17 @@ const router = Router();
  *                 isActive:
  *                   type: boolean
  *                   description: Indicates if the subscription is active
- *                 participantId:
+ *                 participant:
  *                   type: string
  *                   description: The ID of the participant associated with the subscription
  *                 subscriptionType:
  *                   type: string
  *                   enum: [limitDate, payAmount, usageCount]
  *                   description: The type of subscription
- *                 resourceId:
+ *                 resource:
  *                   type: string
  *                   description: The ID of the associated resource (optional)
- *                 resourceIds:
+ *                 resources:
  *                   type: array
  *                   items:
  *                     type: string
@@ -65,16 +65,16 @@ const router = Router();
  *                       description: The end date of the subscription
  *             example:
  *               - isActive: true
- *                 participantId: "12345"
+ *                 participant: "12345"
  *                 subscriptionType: "limitDate"
- *                 resourceId: "abcde"
- *                 resourceIds: ["abcde", "fghij"]
+ *                 resource: "abcde"
+ *                 resources: ["abcde", "fghij"]
  *                 details:
  *                   limitDate: "2024-12-31T23:59:59Z"
  *                   startDate: "2024-01-01T00:00:00Z"
  *                   endDate: "2024-12-31T23:59:59Z"
  *               - isActive: false
- *                 participantId: "67890"
+ *                 participant: "67890"
  *                 subscriptionType: "payAmount"
  *                 details:
  *                   payAmount: 99.99
@@ -95,13 +95,13 @@ const router = Router();
  *                     description: The ID of the created subscription
  *                   isActive:
  *                     type: boolean
- *                   participantId:
+ *                   participant:
  *                     type: string
  *                   subscriptionType:
  *                     type: string
- *                   resourceId:
+ *                   resource:
  *                     type: string
- *                   resourceIds:
+ *                   resources:
  *                     type: array
  *                     items:
  *                       type: string
@@ -181,13 +181,13 @@ router.post('/subscriptions', addSubscriptions);
  *                       description: The ID of the removed subscription
  *                     isActive:
  *                       type: boolean
- *                     participantId:
+ *                     participant:
  *                       type: string
  *                     subscriptionType:
  *                       type: string
- *                     resourceId:
+ *                     resource:
  *                       type: string
- *                     resourceIds:
+ *                     resources:
  *                       type: array
  *                       items:
  *                         type: string

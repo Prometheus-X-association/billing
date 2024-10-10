@@ -174,51 +174,51 @@ class StripeService {
   }
 
   public async linkParticipantToCustomer(
-    participantId: string,
-    customerId: string,
+    participant: string,
+    stripeCustomerId: string,
   ): Promise<void> {
     try {
       const existingMapping = await CustomerParticipantMap.findOne({
-        customerId,
+        stripeCustomerId,
       });
 
       if (existingMapping) {
         throw new Error(
-          `A mapping for customerId ${customerId} already exists.`,
+          `A mapping for stripeCustomerId ${stripeCustomerId} already exists.`,
         );
       }
       const newMapping = new CustomerParticipantMap({
-        participantId,
-        customerId,
+        participant,
+        stripeCustomerId,
       });
       await newMapping.save();
     } catch (error) {
       const err = error as Error;
       Logger.error({
         location: err.stack,
-        message: `Error linking participantId ${participantId} to customerId ${customerId}: ${err.message}`,
+        message: `Error linking participant ${participant} to stripeCustomerId ${stripeCustomerId}: ${err.message}`,
       });
       throw error;
     }
   }
 
   public async linkParticipantToConnectedAccount(
-    participantId: string,
-    connectedAccountId: string,
+    participant: string,
+    stripeAccount: string,
   ): Promise<typeof ConnectedAccountParticipantMap> {
     try {
       const existingMapping = await ConnectedAccountParticipantMap.findOne({
-        connectedAccountId,
+        stripeAccount,
       });
 
       if (existingMapping) {
         throw new Error(
-          `A mapping for connectedAccountId ${connectedAccountId} already exists.`,
+          `A mapping for stripeAccount ${stripeAccount} already exists.`,
         );
       }
       const newMapping = new ConnectedAccountParticipantMap({
-        participantId,
-        connectedAccountId,
+        participant,
+        stripeAccount,
       });
       await newMapping.save();
       return newMapping.toObject();
@@ -226,78 +226,78 @@ class StripeService {
       const err = error as Error;
       Logger.error({
         location: err.stack,
-        message: `Error linking participantId ${participantId} to connectedAccountId ${connectedAccountId}: ${err.message}`,
+        message: `Error linking participant ${participant} to stripeAccount ${stripeAccount}: ${err.message}`,
       });
       throw error;
     }
   }
 
   public async unlinkParticipantFromCustomer(
-    customerId: string,
+    stripeCustomerId: string,
   ): Promise<void> {
     try {
       const result = await CustomerParticipantMap.findOneAndDelete({
-        customerId,
+        stripeCustomerId,
       });
 
       if (!result) {
-        throw new Error(`No mapping found for customerId: ${customerId}`);
+        throw new Error(`No mapping found for stripeCustomerId: ${stripeCustomerId}`);
       }
       Logger.log({
-        message: `Participant has been unlinked from customer ${customerId}`,
+        message: `Participant has been unlinked from stripeCustomerId ${stripeCustomerId}`,
       });
     } catch (error) {
       const err = error as Error;
       Logger.error({
         location: err.stack,
-        message: `Error unlinking customerId ${customerId}: ${err.message}`,
+        message: `Error unlinking stripeCustomerId ${stripeCustomerId}: ${err.message}`,
       });
       throw error;
     }
   }
 
   public async unlinkParticipantFromConnectedAccount(
-      connectedAccountId: string,
+      stripeAccount: string,
   ): Promise<void> {
     try {
       const result = await ConnectedAccountParticipantMap.findOneAndDelete({
-        connectedAccountId,
+        stripeAccount,
       });
 
       if (!result) {
-        throw new Error(`No mapping found for connectedAccountId: ${connectedAccountId}`);
+        throw new Error(`No mapping found for stripeAccount: ${stripeAccount}`);
       }
       Logger.log({
-        message: `Participant has been unlinked from connected account ${connectedAccountId}`,
+        message: `Participant has been unlinked from connected account ${stripeAccount}`,
       });
     } catch (error) {
       const err = error as Error;
       Logger.error({
         location: err.stack,
-        message: `Error unlinking connectedAccountId ${connectedAccountId}: ${err.message}`,
+        message: `Error unlinking stripeAccount ${stripeAccount}: ${err.message}`,
       });
       throw error;
     }
   }
 
-  private async getRelatedParticipantId(customerId: string): Promise<string> {
+  private async getRelatedParticipant(stripeCustomerId: string): Promise<string> {
     try {
-      const mapping = await CustomerParticipantMap.findOne({ customerId });
+      const mapping = await CustomerParticipantMap.findOne({ stripeCustomerId });
       if (!mapping) {
-        throw new Error(`No participant found for customerId: ${customerId}`);
+        throw new Error(`No participant found for stripeCustomerId: ${stripeCustomerId}`);
       }
-      return mapping.participantId;
+      return mapping.participant;
     } catch (error) {
       const err = error as Error;
       Logger.error({
         location: err.stack,
-        message: `Error fetching participantId for customerId ${customerId}: ${err.message}`,
+        message: `Error fetching participant for stripeCustomerId ${stripeCustomerId}: ${err.message}`,
       });
       throw error;
     }
   }
 
-  private async getParticipantId(
+  private async getParticipant(
     customer: string | Stripe.Customer | Stripe.DeletedCustomer,
   ): Promise<string> {
     let customerId: string | null = null;
@@ -309,7 +309,7 @@ class StripeService {
       customerId = customer.id;
     }
     if (customerId) {
-      return await this.getRelatedParticipantId(customerId);
+      return await this.getRelatedParticipant(customerId);
     }
     throw new Error('Unable to retrieve customer ID');
   }
@@ -327,7 +327,7 @@ class StripeService {
       await this.getStripeSubscription(subscriptionId);
     if (subscription) {
       const isActive = subscription.status === 'active';
-      const participantId = await this.getParticipantId(subscription.customer);
+      const participant = await this.getParticipant(subscription.customer);
       const subscriptionType = this.getBillingType(subscription);
       const stripeId = subscription.id;
       const startDate = new Date(subscription.current_period_start * 1000);
@@ -335,10 +335,10 @@ class StripeService {
       return {
         stripeId,
         isActive,
-        participantId,
+        participant,
         subscriptionType,
-        resourceId: '', // Todo
-        resourceIds: [], // Todo
+        resource: '', // Todo
+        resources: [], // Todo
         details: {
           startDate,
           endDate,

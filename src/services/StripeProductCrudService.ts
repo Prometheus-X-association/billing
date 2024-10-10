@@ -22,19 +22,16 @@ class StripeProductCrudService {
     return StripeProductCrudService.instance;
   }
 
-  public async createProduct(props: {
-    productData: Stripe.ProductCreateParams;
-    stripeAccount: string;
-  }): Promise<Stripe.Product | null> {
-    const productData = props.productData;
+  public async createProduct(
+    productData: Stripe.ProductCreateParams,
+    options?: Stripe.RequestOptions,
+  ): Promise<Stripe.Product | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
 
-      return await this.stripeService.products.create(productData, {
-        stripeAccount: props.stripeAccount
-      });
+      return await this.stripeService.products.create(productData, options);
     } catch (error) {
       const err = error as Error;
       Logger.error({
@@ -45,12 +42,12 @@ class StripeProductCrudService {
     }
   }
 
-  public async listProducts(): Promise<Stripe.Product[] | null> {
+  public async listProducts(options?: Stripe.RequestOptions): Promise<Stripe.Product[] | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const products = await this.stripeService.products.list();
+      const products = await this.stripeService.products.list(options);
       return products.data;
     } catch (error) {
       const err = error as Error;
@@ -62,12 +59,12 @@ class StripeProductCrudService {
     }
   }
 
-  public async getProduct(productId: string): Promise<Stripe.Product | null> {
+  public async getProduct(productId: string, options?: Stripe.RequestOptions): Promise<Stripe.Product | null> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const product = await this.stripeService.products.retrieve(productId);
+      const product = await this.stripeService.products.retrieve(productId, options);
       return product;
     } catch (error) {
       const err = error as Error;
@@ -82,6 +79,7 @@ class StripeProductCrudService {
   public async updateProduct(
     productId: string,
     updates: Stripe.ProductUpdateParams,
+    options?: Stripe.RequestOptions,
   ): Promise<Stripe.Product | null> {
     try {
       if (!this.stripeService) {
@@ -90,6 +88,7 @@ class StripeProductCrudService {
       const updatedProduct = await this.stripeService.products.update(
         productId,
         updates,
+        options,
       );
       return updatedProduct;
     } catch (error) {
@@ -102,12 +101,12 @@ class StripeProductCrudService {
     }
   }
 
-  public async deleteProduct(productId: string): Promise<boolean> {
+  public async deleteProduct(productId: string, options?: Stripe.RequestOptions): Promise<boolean> {
     try {
       if (!this.stripeService) {
         throw new Error('Stripe instance is not initialized.');
       }
-      const deletedProduct = await this.stripeService.products.del(productId);
+      const deletedProduct = await this.stripeService.products.del(productId, options);
       return deletedProduct.deleted;
     } catch (error) {
       const err = error as Error;

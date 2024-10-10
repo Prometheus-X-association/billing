@@ -23,14 +23,14 @@ class StripeTokenService {
         return StripeTokenService.instance;
     }
 
-    public async createAccountToken(
-        accountTokenData: Stripe.TokenCreateParams,
+    public async createToken(
+        tokenData: Stripe.TokenCreateParams,
     ): Promise<Stripe.Token | null> {
         try {
             if (!this.stripeService) {
                 throw new Error('Stripe instance is not initialized.');
             }
-            return await this.stripeService.tokens.create(accountTokenData);
+            return await this.stripeService.tokens.create(tokenData);
         } catch (error) {
             Logger.error({
                 location: (error as Error).stack,

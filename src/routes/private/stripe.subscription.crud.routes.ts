@@ -34,6 +34,22 @@ const router = Router();
  *               priceId:
  *                 type: string
  *                 description: The ID of the price.
+ *               paymentMethodId:
+ *                 type: string
+ *                 required: false
+ *                 description: The ID of the payment method.
+ *               metadata:
+ *                 type: object
+ *                 description: The metadata of the subscription.
+ *                 properties:
+ *                   participant:
+ *                     type: string
+ *                     required: true
+ *                     description: The ID of the participant.
+ *                   offer:
+ *                     type: string
+ *                     required: true
+ *                     description: The ID of the offer.
  *     responses:
  *       201:
  *         description: Subscription created successfully.
@@ -50,6 +66,12 @@ router.post('/subscriptions', createSubscription);
  *   get:
  *     summary: Retrieve all subscriptions
  *     description: Fetches all the existing subscriptions.
+ *     parameters:
+ *      - name: stripe-account
+ *        in: header
+ *        description: stripe account
+ *        required: true
+ *        type: string
  *     responses:
  *       200:
  *         description: A list of subscriptions.
@@ -73,6 +95,11 @@ router.get('/subscriptions', getAllSubscriptions);
  *         schema:
  *           type: string
  *         description: The ID of the subscription.
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: Subscription details.
@@ -96,6 +123,11 @@ router.get('/subscriptions/:subscriptionId', getSubscription);
  *         schema:
  *           type: string
  *         description: The ID of the subscription to be updated.
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -126,6 +158,11 @@ router.put('/subscriptions/:subscriptionId', updateSubscription);
  *         schema:
  *           type: string
  *         description: The ID of the subscription to be canceled.
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: Subscription canceled successfully.

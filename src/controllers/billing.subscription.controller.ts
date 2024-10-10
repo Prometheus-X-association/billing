@@ -6,9 +6,9 @@ const BillingSubscriptionService =
 
 export const getParticipantSubscriptions = (req: Request, res: Response) => {
   try {
-    const { participantId } = req.params;
+    const { participant } = req.params;
     const subscriptions =
-      BillingSubscriptionService.getParticipantSubscriptions(participantId);
+      BillingSubscriptionService.getParticipantSubscriptions(participant);
     res.status(200).json(subscriptions ?? []);
   } catch (error) {
     res
@@ -22,11 +22,11 @@ export const getParticipantResourceSubscriptions = (
   res: Response,
 ) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const subscriptions =
       BillingSubscriptionService.getParticipantResourceSubscriptions(
-        participantId,
-        resourceId,
+        participant,
+        resource,
       );
     res.status(200).json(subscriptions ?? []);
   } catch (error) {
@@ -39,10 +39,10 @@ export const getParticipantResourceSubscriptions = (
 
 export const getLimitDateSubscriptions = (req: Request, res: Response) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const subscriptions = BillingSubscriptionService.getLimitDateSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     res.status(200).json(subscriptions ?? []);
   } catch (error) {
@@ -54,10 +54,10 @@ export const getLimitDateSubscriptions = (req: Request, res: Response) => {
 
 export const getPayAmountSubscriptions = (req: Request, res: Response) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const subscriptions = BillingSubscriptionService.getPayAmountSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     res.status(200).json(subscriptions ?? []);
   } catch (error) {
@@ -69,10 +69,10 @@ export const getPayAmountSubscriptions = (req: Request, res: Response) => {
 
 export const getUsageCountSubscriptions = (req: Request, res: Response) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const subscriptions = BillingSubscriptionService.getUsageCountSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     res.status(200).json(subscriptions ?? []);
   } catch (error) {
@@ -84,10 +84,12 @@ export const getUsageCountSubscriptions = (req: Request, res: Response) => {
 
 export const getLastActiveUsageCount = (req: Request, res: Response) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
+    console.log('participant', participant);
+    console.log('resource', resource);
     const usageCount = BillingSubscriptionService.getLastActiveUsageCount(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     res.status(200).json(usageCount ?? {});
   } catch (error) {
@@ -99,10 +101,10 @@ export const getLastActiveUsageCount = (req: Request, res: Response) => {
 
 export const getLastActivePayAmount = (req: Request, res: Response) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const payAmount = BillingSubscriptionService.getLastActivePayAmount(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     res.status(200).json(payAmount ?? {});
   } catch (error) {
@@ -114,10 +116,10 @@ export const getLastActivePayAmount = (req: Request, res: Response) => {
 
 export const getLastActiveLimitDate = (req: Request, res: Response) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const limitDate = BillingSubscriptionService.getLastActiveLimitDate(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     res.status(200).json(limitDate ?? {});
   } catch (error) {
@@ -132,11 +134,11 @@ export const getValidActiveUsageCountSubscriptions = (
   res: Response,
 ) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const usageCount =
       BillingSubscriptionService.getValidActiveUsageCountSubscriptions(
-        participantId,
-        resourceId,
+        participant,
+        resource,
       );
     res.status(200).json(usageCount ?? {});
   } catch (error) {
@@ -151,11 +153,11 @@ export const getValidActivePayAmountSubscriptions = (
   res: Response,
 ) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const payAmount =
       BillingSubscriptionService.getValidActivePayAmountSubscriptions(
-        participantId,
-        resourceId,
+        participant,
+        resource,
       );
     res.status(200).json(payAmount ?? {});
   } catch (error) {
@@ -170,11 +172,11 @@ export const getValidActiveLimitDateSubscriptions = (
   res: Response,
 ) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const limitDate =
       BillingSubscriptionService.getValidActiveLimitDateSubscriptions(
-        participantId,
-        resourceId,
+        participant,
+        resource,
       );
     res.status(200).json(limitDate ?? {});
   } catch (error) {
@@ -186,11 +188,11 @@ export const getValidActiveLimitDateSubscriptions = (
 
 export const hasActiveSubscriptionFor = (req: Request, res: Response) => {
   try {
-    const { participantId, resourceId } = req.params;
+    const { participant, resource } = req.params;
     const hasActiveSubscription =
       BillingSubscriptionService.hasActiveSubscriptionFor(
-        participantId,
-        resourceId,
+        participant,
+        resource,
       );
     res.status(200).json({ hasActiveSubscription });
   } catch (error) {

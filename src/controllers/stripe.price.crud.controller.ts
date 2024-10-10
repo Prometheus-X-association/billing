@@ -5,7 +5,7 @@ import { Logger } from '../libs/Logger';
 export const createPrice = async (req: Request, res: Response) => {
   try {
     const stripeCrudService = StripePriceCrudService.retrieveServiceInstance();
-    const newPrice = await stripeCrudService.createPrice(req.body);
+    const newPrice = await stripeCrudService.createPrice(req.body, {stripeAccount: req.headers['stripe-account'] as string});
 
     if (newPrice) {
       return res.status(201).json(newPrice);
@@ -25,7 +25,7 @@ export const createPrice = async (req: Request, res: Response) => {
 export const getAllPrices = async (req: Request, res: Response) => {
   try {
     const stripeCrudService = StripePriceCrudService.retrieveServiceInstance();
-    const prices = await stripeCrudService.listPrices();
+    const prices = await stripeCrudService.listPrices({stripeAccount: req.headers['stripe-account'] as string});
 
     if (prices && prices.length > 0) {
       return res.status(200).json(prices);
@@ -46,7 +46,7 @@ export const getPrice = async (req: Request, res: Response) => {
   const { priceId } = req.params;
   try {
     const stripeCrudService = StripePriceCrudService.retrieveServiceInstance();
-    const price = await stripeCrudService.getPrice(priceId);
+    const price = await stripeCrudService.getPrice(priceId, {stripeAccount: req.headers['stripe-account'] as string});
 
     if (price) {
       return res.status(200).json(price);
@@ -68,7 +68,7 @@ export const updatePrice = async (req: Request, res: Response) => {
   const updates = req.body;
   try {
     const stripeCrudService = StripePriceCrudService.retrieveServiceInstance();
-    const updatedPrice = await stripeCrudService.updatePrice(priceId, updates);
+    const updatedPrice = await stripeCrudService.updatePrice(priceId, updates, {stripeAccount: req.headers['stripe-account'] as string});
 
     if (updatedPrice) {
       return res.status(200).json(updatedPrice);
@@ -89,7 +89,7 @@ export const deactivatePrice = async (req: Request, res: Response) => {
   const { priceId } = req.params;
   try {
     const stripeCrudService = StripePriceCrudService.retrieveServiceInstance();
-    const deactivatedPrice = await stripeCrudService.deactivatePrice(priceId);
+    const deactivatedPrice = await stripeCrudService.deactivatePrice(priceId, {stripeAccount: req.headers['stripe-account'] as string});
 
     if (deactivatedPrice) {
       return res.status(200).json({

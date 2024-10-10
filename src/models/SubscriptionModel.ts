@@ -46,7 +46,7 @@ const SubscriptionDetailSchema = new Schema(
     payAmount: { type: Number },
     usageCount: { type: Number },
     startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
+    endDate: { type: Date },
   },
   { _id: false },
 );
@@ -54,18 +54,18 @@ const SubscriptionDetailSchema = new Schema(
 const SubscriptionSchema = new Schema({
   isActive: { type: Boolean, required: true },
   stripeId: { type: String },
-  participantId: { type: String, required: true },
+  participant: { type: String, required: true },
   subscriptionType: {
     type: String,
     enum: ['limitDate', 'payAmount', 'usageCount'],
     required: true,
   },
-  resourceId: { type: String },
-  resourceIds: { type: [String] },
+  resource: { type: String },
+  resources: { type: [String] },
   details: { type: SubscriptionDetailSchema, required: true },
 });
 
-SubscriptionSchema.index({ participantId: 1, resourceId: 1 });
+SubscriptionSchema.index({ participant: 1, resource: 1 });
 
 interface SubscriptionDocument
   extends Omit<Document, 'collection'>,

@@ -1,5 +1,4 @@
 import {Request, Response} from "express";
-import StripeConnectedAccountService from "../services/StripeConnectedAccountService";
 import {Logger} from "../libs/Logger";
 import BillingCustomerService from "../services/BillingCustomerService";
 
@@ -43,10 +42,10 @@ export const getCustomerById = async (req: Request, res: Response) => {
     }
 };
 
-export const getCustomerByParticipantId = async (req: Request, res: Response) => {
+export const getCustomerByParticipant = async (req: Request, res: Response) => {
     try {
-        const { participantId } = req.params;
-        const customer = await billingCustomerService.getCustomerByParticipantId(participantId);
+        const { participant } = req.params;
+        const customer = await billingCustomerService.getCustomerByParticipant(participant);
 
         if (customer) {
             return res.status(200).json(customer);
@@ -62,10 +61,10 @@ export const getCustomerByParticipantId = async (req: Request, res: Response) =>
     }
 };
 
-export const getCustomerByCustomerId = async (req: Request, res: Response) => {
+export const getCustomerByStripeCustomerId = async (req: Request, res: Response) => {
     try {
-        const { customerId } = req.params;
-        const customer = await billingCustomerService.getCustomerByCustomerId(customerId);
+        const { stripeCustomerId } = req.params;
+        const customer = await billingCustomerService.getCustomerByStripeCustomerId(stripeCustomerId);
 
         if (customer) {
             return res.status(200).json(customer);

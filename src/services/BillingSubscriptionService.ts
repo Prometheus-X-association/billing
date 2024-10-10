@@ -31,45 +31,45 @@ class BillingSubscriptionService {
     );
   }
 
-  public getParticipantSubscriptions(participantId: string): Subscription[] {
+  public getParticipantSubscriptions(participant: string): Subscription[] {
     return this.subscriptions.filter(
-      (sub) => sub.participantId === participantId,
+      (sub) => sub.participant === participant,
     );
   }
 
   /**
    * Returns all subscriptions for a resource of a given participant.
    *
-   * @param participantId - The Id of the participant.
-   * @param resourceId - The Id of the resource.
+   * @param participant - The Id of the participant.
+   * @param resource - The Id of the resource.
    * @returns An array of subscriptions that match the participant and resource.
    */
   public getParticipantResourceSubscriptions(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): Subscription[] {
     return this.subscriptions.filter(
       (sub) =>
-        sub.participantId === participantId &&
-        (sub.resourceId === resourceId ||
-          (sub.resourceIds && sub.resourceIds.includes(resourceId))),
+        sub.participant === participant &&
+        (sub.resource === resource ||
+          (sub.resources && sub.resources.includes(resource))),
     );
   }
 
   /**
    * Returns all 'limitDate' subscriptions for a resource of a given participant.
    *
-   * @param participantId - The Id of the participant.
-   * @param resourceId - The Id of the resource.
+   * @param participant - The Id of the participant.
+   * @param resource - The Id of the resource.
    * @returns An array of 'limitDate' subscriptions that match the participant and resource.
    */
   public getLimitDateSubscriptions(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): Subscription[] {
     const subscriptions = this.getParticipantResourceSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     return subscriptions.filter((sub) => sub.subscriptionType === 'limitDate');
   }
@@ -77,17 +77,17 @@ class BillingSubscriptionService {
   /**
    * Returns all PayAmount subscriptions for a resource of a given participant.
    *
-   * @param participantId - The Id of the participant.
-   * @param resourceId - The Id of the resource.
+   * @param participant - The Id of the participant.
+   * @param resource - The Id of the resource.
    * @returns An array of 'payAmount' subscriptions that match the participant and resource.
    */
   public getPayAmountSubscriptions(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): Subscription[] {
     const subscriptions = this.getParticipantResourceSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     return subscriptions.filter((sub) => sub.subscriptionType === 'payAmount');
   }
@@ -95,17 +95,17 @@ class BillingSubscriptionService {
   /**
    * Returns all UsageCount subscriptions for a resource of a given participant.
    *
-   * @param participantId - The Id of the participant.
-   * @param resourceId - The Id of the resource.
+   * @param participant - The Id of the participant.
+   * @param resource - The Id of the resource.
    * @returns An array of 'usageCount' subscriptions that match the participant and resource.
    */
   public getUsageCountSubscriptions(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): Subscription[] {
     const subscriptions = this.getParticipantResourceSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     return subscriptions.filter((sub) => sub.subscriptionType === 'usageCount');
   }
@@ -115,23 +115,24 @@ class BillingSubscriptionService {
    * This method filters active 'usageCount' subscriptions, selects those that are still valid
    * (count > 0 and endDate in the future), and returns the one with the lowest usage count.
    *
-   * @param participantId - The ID of the participant.
-   * @param resourceId - The ID of the resource.
+   * @param participant - The ID of the participant.
+   * @param resource - The ID of the resource.
    * @returns An object containing the subscription ID and the usage count,
    *          or `undefined` if no valid active subscription is found.
    */
   public getLastActiveUsageCount(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): { subscriptionId: string; usageCount: number } | undefined {
     const now = new Date();
     const activeSubscriptions = this.getUsageCountSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     )
       .filter(
         (sub) =>
           sub.isActive &&
+          sub.details?.endDate &&
           sub.details.endDate > now &&
           (sub.details.usageCount ?? 0) > 0,
       )
@@ -156,23 +157,24 @@ class BillingSubscriptionService {
    * This method filters active 'payAmount' subscriptions, selects those that are still valid
    * (payAmount > 0 and endDate in the future), and returns the one with the lowest pay amount.
    *
-   * @param participantId - The ID of the participant.
-   * @param resourceId - The ID of the resource.
+   * @param participant - The ID of the participant.
+   * @param resource - The ID of the resource.
    * @returns An object containing the subscription ID and the pay amount,
    *          or `undefined` if no valid active subscription is found.
    */
   public getLastActivePayAmount(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): { subscriptionId: string; payAmount: number } | undefined {
     const now = new Date();
     const activeSubscriptions = this.getPayAmountSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     )
       .filter(
         (sub) =>
           sub.isActive &&
+          sub.details?.endDate &&
           sub.details.endDate > now &&
           (sub.details.payAmount ?? 0) > 0,
       )
@@ -195,23 +197,24 @@ class BillingSubscriptionService {
    * This method filters active 'limitDate' subscriptions, selects those that are still valid
    * (limitDate in the future and endDate in the future), and returns the one with the closest limit date.
    *
-   * @param participantId - The ID of the participant.
-   * @param resourceId - The ID of the resource.
+   * @param participant - The ID of the participant.
+   * @param resource - The ID of the resource.
    * @returns An object containing the subscription ID and the limit date,
    *          or `undefined` if no valid active subscription is found.
    */
   public getLastActiveLimitDate(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): { subscriptionId: string; limitDate: Date } | undefined {
     const now = new Date();
     const activeSubscriptions = this.getLimitDateSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     )
       .filter(
         (sub) =>
           sub.isActive &&
+          sub.details?.endDate &&
           sub.details.endDate > now &&
           sub.details.limitDate &&
           sub.details.limitDate > now,
@@ -239,22 +242,23 @@ class BillingSubscriptionService {
    * This method filters active 'usageCount' subscriptions and selects those that are still valid
    * (endDate in the future and usageCount greater than 0).
    *
-   * @param participantId - The ID of the participant.
-   * @param resourceId - The ID of the resource.
+   * @param participant - The ID of the participant.
+   * @param resource - The ID of the resource.
    * @returns An array of objects containing the subscription ID and the remaining usage count,
    *          or an empty array if no valid active subscriptions are found.
    */
   public getValidActiveUsageCountSubscriptions(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): Array<{ subscriptionId: string; usageCount: number }> {
     const now = new Date();
     const activeSubscriptions = this.getUsageCountSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     ).filter(
       (sub) =>
         sub.isActive &&
+        sub.details?.endDate &&
         sub.details.endDate > now &&
         (sub.details.usageCount ?? 0) > 0,
     );
@@ -271,22 +275,23 @@ class BillingSubscriptionService {
    * This method filters active 'payAmount' subscriptions and selects those that are still valid
    * (payAmount > 0 and endDate in the future).
    *
-   * @param participantId - The ID of the participant.
-   * @param resourceId - The ID of the resource.
+   * @param participant - The ID of the participant.
+   * @param resource - The ID of the resource.
    * @returns An array of objects containing the subscription ID and the pay amount,
    *          or an empty array if no valid active subscriptions are found.
    */
   public getValidActivePayAmountSubscriptions(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): Array<{ subscriptionId: string; payAmount: number }> {
     const now = new Date();
     const activeSubscriptions = this.getPayAmountSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     ).filter(
       (sub) =>
         sub.isActive &&
+        sub.details?.endDate &&
         sub.details.endDate > now &&
         (sub.details.payAmount ?? 0) > 0,
     );
@@ -303,19 +308,19 @@ class BillingSubscriptionService {
    * This method filters active 'limitDate' subscriptions and selects those that are still valid
    * (limitDate in the future).
    *
-   * @param participantId - The ID of the participant.
-   * @param resourceId - The ID of the resource.
+   * @param participant - The ID of the participant.
+   * @param resource - The ID of the resource.
    * @returns An array of objects containing the subscription ID and the limit date,
    *          or an empty array if no valid active subscriptions are found.
    */
   public getValidActiveLimitDateSubscriptions(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): Array<{ subscriptionId: string; limitDate: number }> {
     const now = new Date();
     const activeSubscriptions = this.getLimitDateSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     ).filter(
       (sub) =>
         sub.isActive && sub.details.limitDate && sub.details.limitDate > now,
@@ -331,17 +336,17 @@ class BillingSubscriptionService {
   /**
    * Checks if there is an active subscription for a resource of a given participant.
    *
-   * @param participantId - The Id of the participant.
-   * @param resourceId - The Id of the resource.
+   * @param participant - The Id of the participant.
+   * @param resource - The Id of the resource.
    * @returns True if there is at least one active subscription, false otherwise.
    */
   public hasActiveSubscriptionFor(
-    participantId: string,
-    resourceId: string,
+    participant: string,
+    resource: string,
   ): boolean {
     const subscriptions = this.getParticipantResourceSubscriptions(
-      participantId,
-      resourceId,
+      participant,
+      resource,
     );
     return subscriptions.some((sub) => sub.isActive);
   }

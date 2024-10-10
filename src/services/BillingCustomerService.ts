@@ -43,11 +43,11 @@ class BillingCustomerService {
         }
     }
 
-    public async getCustomerByParticipantId(
-        participantId: string,
+    public async getCustomerByParticipant(
+        participant: string,
     ): Promise<typeof CustomerParticipantMap | null> {
         try {
-            return await CustomerParticipantMap.findOne({participantId}).lean();
+            return await CustomerParticipantMap.findOne({participant}).lean();
 
         } catch (error) {
             const err = error as Error;
@@ -59,17 +59,35 @@ class BillingCustomerService {
         }
     }
 
-    public async getCustomerByCustomerId(
-        customerId: string,
+    public async getCustomerByStripeCustomerId(
+        stripeCustomerId: string,
     ): Promise<typeof CustomerParticipantMap | null> {
         try {
-            return await CustomerParticipantMap.findOne({customerId}).lean();
+            return await CustomerParticipantMap.findOne({stripeCustomerId}).lean();
 
         } catch (error) {
             const err = error as Error;
             Logger.error({
                 location: err.stack,
                 message: `Error retrieving customer: ${err.message}`,
+            });
+            return null;
+        }
+    }
+
+    public async addCustomer(props: {
+        participant: string;
+        stripeCustomerId: string;
+    }): Promise<typeof CustomerParticipantMap & {_id: string} | null> {
+        try {
+            const newCustomer = new CustomerParticipantMap(props);
+            await newCustomer.save();
+            return newCustomer.toObject();
+        } catch (error) {
+            const err = error as Error;
+            Logger.error({
+                location: err.stack,
+                message: `Error adding customer: ${err.message}`,
             });
             return null;
         }

@@ -43,11 +43,11 @@ class BillingConnectedAccountService {
         }
     }
 
-    public async getConnectedAccountByParticipantId(
-        participantId: string,
+    public async getConnectedAccountByParticipant(
+        participant: string,
     ): Promise<typeof ConnectedAccountParticipantMap | null> {
         try {
-            return await ConnectedAccountParticipantMap.findOne({participantId}).lean();
+            return await ConnectedAccountParticipantMap.findOne({participant}).lean();
 
         } catch (error) {
             const err = error as Error;
@@ -59,12 +59,35 @@ class BillingConnectedAccountService {
         }
     }
 
-    public async getConnectedAccountByConnectedAccountId(
-        connectedAccountId: string,
+    public async getConnectedAccountByStripeAccount(
+        stripeAccount: string,
     ): Promise<typeof ConnectedAccountParticipantMap | null> {
         try {
-            return await ConnectedAccountParticipantMap.findOne({connectedAccountId}).lean();
+            return await ConnectedAccountParticipantMap.findOne({stripeAccount}).lean();
 
+        } catch (error) {
+            const err = error as Error;
+            Logger.error({
+                location: err.stack,
+                message: `Error retrieving connected account: ${err.message}`,
+            });
+            return null;
+        }
+    }
+
+    public async addConnectedAccount(props: {
+        participant: string,
+        stripeAccount: string,
+    }): Promise<typeof ConnectedAccountParticipantMap & {_id: string} | null> {
+        try {
+            const connectedAccount = await ConnectedAccountParticipantMap.create({
+                participant: props.participant,
+                stripeAccount: props.stripeAccount,
+            });
+
+            await connectedAccount.save();
+            
+            return connectedAccount.toObject();
         } catch (error) {
             const err = error as Error;
             Logger.error({

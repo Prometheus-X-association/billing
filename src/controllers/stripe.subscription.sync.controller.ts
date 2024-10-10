@@ -39,15 +39,15 @@ export const linkParticipantToCustomer = async (
   res: Response,
 ) => {
   try {
-    const { participantId, customerId } = req.body;
+    const { participant, stripeCustomerId } = req.body;
 
-    if (!participantId || !customerId) {
+    if (!participant || !stripeCustomerId) {
       return res
         .status(400)
-        .json({ message: 'participantId and customerId are required' });
+        .json({ message: 'participant and stripeCustomerId are required' });
     }
     const stripeService = StripeService.retrieveServiceInstance();
-    await stripeService.linkParticipantToCustomer(participantId, customerId);
+    await stripeService.linkParticipantToCustomer(participant, stripeCustomerId);
     res.status(200).json({ message: 'Link established successfully' });
   } catch (error) {
     res
@@ -61,15 +61,15 @@ export const linkParticipantToConnectedAccount = async (
   res: Response,
 ) => {
   try {
-    const { participantId, connectedAccountId } = req.body;
+    const { participant, stripeAccount } = req.body;
 
-    if (!participantId || !connectedAccountId) {
+    if (!participant || !stripeAccount) {
       return res
         .status(400)
-        .json({ message: 'participantId and connectedAccountId are required' });
+        .json({ message: 'participant and stripeAccount are required' });
     }
     const stripeService = StripeService.retrieveServiceInstance();
-    const mapping = await stripeService.linkParticipantToConnectedAccount(participantId, connectedAccountId);
+    const mapping = await stripeService.linkParticipantToConnectedAccount(participant, stripeAccount);
     res.status(200).json(mapping);
   } catch (error) {
     res
@@ -102,12 +102,12 @@ export const unlinkParticipantFromConnectedAccount = async (
   res: Response,
 ) => {
   try {
-    const { connectedAccountId } = req.params;
-    if (!connectedAccountId) {
-      return res.status(400).json({ message: 'connectedAccountId is required' });
+    const { stripeAccount } = req.params;
+    if (!stripeAccount) {
+      return res.status(400).json({ message: 'stripeAccount is required' });
     }
     const stripeService = StripeService.retrieveServiceInstance();
-    await stripeService.unlinkParticipantFromConnectedAccount(connectedAccountId);
+    await stripeService.unlinkParticipantFromConnectedAccount(stripeAccount);
     res.status(200).json({ message: 'Link removed successfully' });
   } catch (error) {
     res

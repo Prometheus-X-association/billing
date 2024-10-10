@@ -52,7 +52,7 @@ router.post(
  * /api/stripe/link/customer:
  *   post:
  *     summary: Link a participant to a Stripe customer
- *     description: Establish a mapping between a participantId from your system and a customerId from Stripe.
+ *     description: Establish a mapping between a participant from your system and a stripe customer from Stripe.
  *     tags:
  *       - Participant-Customer Mapping
  *     requestBody:
@@ -62,11 +62,11 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               participantId:
+ *               participant:
  *                 type: string
  *                 description: The ID of the participant in the internal system.
  *                 example: "12345"
- *               customerId:
+ *               stripeCustomerId:
  *                 type: string
  *                 description: The Stripe customer ID.
  *                 example: "customer_6789"
@@ -82,7 +82,7 @@ router.post(
  *                   type: string
  *                   example: "Link established successfully"
  *       400:
- *         description: Missing participantId or customerId in the request
+ *         description: Missing participant or stripeCustomerId in the request
  *         content:
  *           application/json:
  *             schema:
@@ -90,7 +90,7 @@ router.post(
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "participantId and customerId are required"
+ *                   example: "participant and stripeCustomerId are required"
  *       500:
  *         description: Internal server error
  *         content:
@@ -111,7 +111,7 @@ router.post('/link/customer', linkParticipantToCustomer);
  * /api/stripe/link/connect:
  *   post:
  *     summary: Link a participant to a Stripe connected account
- *     description: Establish a mapping between a participantId from your system and a connected Account Id from Stripe.
+ *     description: Establish a mapping between a participant from your system and a connected Account from Stripe.
  *     tags:
  *       - Participant-ConnectedAccount Mapping
  *     requestBody:
@@ -121,13 +121,13 @@ router.post('/link/customer', linkParticipantToCustomer);
  *           schema:
  *             type: object
  *             properties:
- *               participantId:
+ *               participant:
  *                 type: string
  *                 description: The ID of the participant in the internal system.
  *                 example: "12345"
- *               connectedAccountId:
+ *               stripeAccount:
  *                 type: string
- *                 description: The Stripe connected account ID.
+ *                 description: The Stripe account.
  *                 example: "acc_6789"
  *     responses:
  *       200:
@@ -141,7 +141,7 @@ router.post('/link/customer', linkParticipantToCustomer);
  *                   type: string
  *                   example: "Link established successfully"
  *       400:
- *         description: Missing participantId or connectedAccountId in the request
+ *         description: Missing participant or stripeAccount in the request
  *         content:
  *           application/json:
  *             schema:
@@ -149,7 +149,7 @@ router.post('/link/customer', linkParticipantToCustomer);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "participantId and connectedAccountId are required"
+ *                   example: "participant and stripeAccount are required"
  *       500:
  *         description: Internal server error
  *         content:
@@ -159,7 +159,7 @@ router.post('/link/customer', linkParticipantToCustomer);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Error linking participant to customer"
+ *                   example: "Error linking participant to connected account"
  *                 error:
  *                   type: string
  */
@@ -170,7 +170,7 @@ router.post('/link/connect', linkParticipantToConnectedAccount);
  * /api/stripe/unlink/customer/{customerId}:
  *   delete:
  *     summary: Unlink a participant from a Stripe customer
- *     description: Remove the mapping between a participantId and a Stripe customerId.
+ *     description: Remove the mapping between a participant and a Stripe customer.
  *     tags:
  *       - Participant-Customer Mapping
  *     parameters:
@@ -211,7 +211,7 @@ router.post('/link/connect', linkParticipantToConnectedAccount);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Error unlinking participant from customer"
+ *                   example: "Error unlinking participant from connected account"
  *                 error:
  *                   type: string
  */
@@ -219,19 +219,19 @@ router.delete('/unlink/customer/:customerId', unlinkParticipantFromCustomer);
 
 /**
  * @swagger
- * /api/stripe/unlink/connect/{connectedAccountId}:
+ * /api/stripe/unlink/connect/{stripeAccount}:
  *   delete:
  *     summary: Unlink a participant from a Stripe connected Account
- *     description: Remove the mapping between a participantId and a Stripe connectedAccountId.
+ *     description: Remove the mapping between a participant and a Stripe stripeAccount.
  *     tags:
  *       - Participant-ConnectedAccount Mapping
  *     parameters:
  *       - in: path
- *         name: connectedAccountId
+ *         name: stripeAccount
  *         schema:
  *           type: string
  *         required: true
- *         description: The Stripe connected Account Id to be unlinked.
+ *         description: The stripe Account.
  *         example: "acct_6789"
  *     responses:
  *       200:
@@ -245,7 +245,7 @@ router.delete('/unlink/customer/:customerId', unlinkParticipantFromCustomer);
  *                   type: string
  *                   example: "Link removed successfully"
  *       400:
- *         description: Missing connectedAccountId in the request
+ *         description: Missing stripeAccount in the request
  *         content:
  *           application/json:
  *             schema:
@@ -253,7 +253,7 @@ router.delete('/unlink/customer/:customerId', unlinkParticipantFromCustomer);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "connectedAccountId is required"
+ *                   example: "stripeAccount is required"
  *       500:
  *         description: Internal server error
  *         content:
@@ -267,6 +267,6 @@ router.delete('/unlink/customer/:customerId', unlinkParticipantFromCustomer);
  *                 error:
  *                   type: string
  */
-router.delete('/unlink/connect/:connectedAccountId', unlinkParticipantFromConnectedAccount);
+router.delete('/unlink/connect/:stripeAccount', unlinkParticipantFromConnectedAccount);
 
 export default router;

@@ -14,10 +14,10 @@ class BillingProductService {
         return BillingProductService.instance;
     }
 
-    public async listProductsByParticipantId(participantId: string): Promise<typeof ProductOfferMap[] | null> {
+    public async listProductsByParticipant(participant: string): Promise<typeof ProductOfferMap & {_id: string}[] | null> {
         try {
             return await ProductOfferMap.find({
-                participantId
+                participant
             }).lean();
         } catch (error) {
             const err = error as Error;
@@ -46,10 +46,10 @@ class BillingProductService {
     }
 
     public async createProduct(props: {
-        participantId: string;
+        participant: string;
         stripeId: string;
         defaultPriceId: string;
-        offerId: string;
+        offer: string;
     }){
         try {
             return await ProductOfferMap.create(props);
@@ -65,14 +65,14 @@ class BillingProductService {
 
     public async addPrice(props: {
         id: string;
-        customerId: string;
+        stripeCustomerId: string;
         stripeId: string;
     }): Promise<typeof ProductOfferMap | null> {
         try {
             return await ProductOfferMap.findByIdAndUpdate(props.id, {
                 $push: {
                     prices: {
-                        customerId: props.customerId,
+                        stripeCustomerId: props.stripeCustomerId,
                         stripeId: props.stripeId,
                     }
                 }

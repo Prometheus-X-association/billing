@@ -14,6 +14,12 @@ const router = Router();
  *   post:
  *     summary: Create a new payment intent in Stripe
  *     description: This endpoint allows you to create a new payment intent for processing a payment with the specified parameters.
+ *     parameters:
+ *      - name: stripe-account
+ *        in: header
+ *        description: stripe account
+ *        required: true
+ *        type: string
  *     tags:
  *       - Stripe Payment Intent
  *     requestBody:
@@ -46,12 +52,17 @@ router.post('/payment_intents', createPaymentIntent);
  *     tags:
  *       - Stripe Payment Intent
  *     parameters:
- *       - name: paymentIntentId
- *         in: path
- *         required: true
- *         description: The ID of the payment intent to update.
- *         schema:
- *           type: string
+ *      - name: stripe-account
+ *        in: header
+ *        description: stripe account
+ *        required: true
+ *        type: string
+ *      - name: paymentIntentId
+ *        in: path
+ *        required: true
+ *        description: The ID of the payment intent to update.
+ *        schema:
+ *          type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -86,12 +97,17 @@ router.post('/payment_intents/:paymentIntentId', updatePaymentIntent);
  *     tags:
  *       - Stripe Payment Intent
  *     parameters:
- *       - name: paymentIntentId
- *         in: path
- *         required: true
- *         description: The ID of the payment intent to retrieve.
- *         schema:
- *           type: string
+ *      - name: stripe-account
+ *        in: header
+ *        description: stripe account
+ *        required: true
+ *        type: string
+ *      - name: paymentIntentId
+ *        in: path
+ *        required: true
+ *        description: The ID of the payment intent to retrieve.
+ *        schema:
+ *          type: string
  *     responses:
  *       200:
  *         description: Successfully retrieved the payment intent.
@@ -111,12 +127,17 @@ router.get('/payment_intents/:paymentIntentId', getPaymentIntent);
  *     tags:
  *       - Stripe Payment Intent
  *     parameters:
- *       - name: paymentIntentId
- *         in: path
- *         required: true
- *         description: The ID of the payment intent to confirm.
- *         schema:
- *           type: string
+ *      - name: stripe-account
+ *        in: header
+ *        description: stripe account
+ *        required: true
+ *        type: string
+ *      - name: paymentIntentId
+ *        in: path
+ *        required: true
+ *        description: The ID of the payment intent to confirm.
+ *        schema:
+ *          type: string
  *     requestBody:
  *       required: false
  *       content:

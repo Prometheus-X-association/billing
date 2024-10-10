@@ -27,16 +27,16 @@ export interface SubscriptionDetail {
   /**
    * The date when the subscription ends or expires.
    */
-  endDate: Date;
+  endDate?: Date;
 }
 
 export interface Subscription {
   _id?: string;
   stripeId?: string;
   isActive: boolean;
-  participantId: string;
+  participant: string;
   subscriptionType: SubscriptionType;
-  resourceId?: string;
-  resourceIds?: string[];
+  resource?: string;
+  resources?: string[];
   details: SubscriptionDetail;
 }

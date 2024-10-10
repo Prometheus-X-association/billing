@@ -42,10 +42,10 @@ export const getConnectedAccountById = async (req: Request, res: Response) => {
     }
 };
 
-export const getConnectedAccountByParticipantId = async (req: Request, res: Response) => {
+export const getConnectedAccountByParticipant = async (req: Request, res: Response) => {
     try {
-        const { participantId } = req.params;
-        const connectedAccount = await billingConnectedAccountService.getConnectedAccountByParticipantId(participantId);
+        const { participant } = req.params;
+        const connectedAccount = await billingConnectedAccountService.getConnectedAccountByParticipant(participant);
 
         if (connectedAccount) {
             return res.status(200).json(connectedAccount);
@@ -61,10 +61,10 @@ export const getConnectedAccountByParticipantId = async (req: Request, res: Resp
     }
 };
 
-export const getConnectedAccountByConnectedAccountId = async (req: Request, res: Response) => {
+export const getConnectedAccountByStripeAccount = async (req: Request, res: Response) => {
     try {
-        const { connectedAccountId } = req.params;
-        const connectedAccount = await billingConnectedAccountService.getConnectedAccountByConnectedAccountId(connectedAccountId);
+        const { stripeAccount } = req.params;
+        const connectedAccount = await billingConnectedAccountService.getConnectedAccountByStripeAccount(stripeAccount);
 
         if (connectedAccount) {
             return res.status(200).json(connectedAccount);

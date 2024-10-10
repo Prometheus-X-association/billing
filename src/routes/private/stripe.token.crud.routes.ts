@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import {createAccountToken} from "../../controllers/stripe.token.crud.controller";
+import { createToken } from "../../controllers/stripe.token.crud.controller";
 
 const router = Router();
 
 /**
  * @swagger
- * /api/stripe/token/account:
+ * /api/stripe/token:
  *   post:
- *     summary: Create a new account token
- *     description: This endpoint allows you to create a new account token.
+ *     summary: Create a new token
+ *     description: This endpoint allows you to create a new token.
  *     tags:
  *       - Stripe Token
  *     requestBody:
@@ -73,6 +73,6 @@ const router = Router();
  *       500:
  *         description: Failed to create account token.
  */
-router.post('/token/account', createAccountToken);
+router.post('/token', createToken);
 
 export default router;

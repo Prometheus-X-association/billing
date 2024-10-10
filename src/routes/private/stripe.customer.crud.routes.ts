@@ -15,6 +15,12 @@ const router = Router();
  *   post:
  *     summary: Create a new customer for the connected account in stripe
  *     description: This endpoint allows you to create a new customer in Stripe with the given details.
+ *     parameters:
+ *      - name: stripe-account
+ *        in: header
+ *        description: stripe account
+ *        required: true
+ *        type: string
  *     tags:
  *       - Stripe Customer
  *     requestBody:
@@ -30,9 +36,6 @@ const router = Router();
  *               name:
  *                 type: string
  *                 description: The name of the customer.
- *               connectedAccountId:
- *                 type: string
- *                 description: The connected account id.
  *     responses:
  *       201:
  *         description: Successfully created a new customer.
@@ -47,6 +50,12 @@ router.post('/customers', createCustomer);
  *   get:
  *     summary: Get a list of all Stripe customers
  *     description: Retrieve all customers currently stored in the Stripe account.
+ *     parameters:
+ *      - name: stripe-account
+ *        in: header
+ *        description: stripe account
+ *        required: true
+ *        type: string
  *     tags:
  *       - Stripe Customer
  *     responses:
@@ -87,6 +96,11 @@ router.get('/customers', getAllCustomers);
  *         description: The ID of the customer to retrieve.
  *         schema:
  *           type: string
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: Successfully retrieved the customer.
@@ -112,6 +126,11 @@ router.get('/customers/:customerId', getCustomer);
  *         description: The ID of the customer to update.
  *         schema:
  *           type: string
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -150,6 +169,11 @@ router.put('/customers/:customerId', updateCustomer);
  *         description: The ID of the customer to delete.
  *         schema:
  *           type: string
+ *       - name: stripe-account
+ *         in: header
+ *         description: stripe account
+ *         required: true
+ *         type: string
  *     responses:
  *       200:
  *         description: Customer deleted successfully.

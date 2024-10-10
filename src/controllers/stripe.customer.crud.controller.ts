@@ -6,7 +6,9 @@ export const createCustomer = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeCustomerCrudService.retrieveServiceInstance();
-    const newCustomer = await stripeCrudService.createCustomer(req.body);
+    const newCustomer = await stripeCrudService.createCustomer(req.body, {
+      stripeAccount: req.headers['stripe-account'] as string,
+    });
 
     if (newCustomer) {
       return res.status(201).json(newCustomer);
@@ -27,7 +29,7 @@ export const getAllCustomers = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeCustomerCrudService.retrieveServiceInstance();
-    const customers = await stripeCrudService.listCustomers();
+    const customers = await stripeCrudService.listCustomers({stripeAccount: req.headers['stripe-account'] as string});
 
     if (customers && customers.length > 0) {
       return res.status(200).json(customers);
@@ -49,7 +51,7 @@ export const getCustomer = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeCustomerCrudService.retrieveServiceInstance();
-    const customer = await stripeCrudService.getCustomer(customerId);
+    const customer = await stripeCrudService.getCustomer(customerId, {stripeAccount: req.headers['stripe-account'] as string});
 
     if (customer) {
       return res.status(200).json(customer);
@@ -75,6 +77,7 @@ export const updateCustomer = async (req: Request, res: Response) => {
     const updatedCustomer = await stripeCrudService.updateCustomer(
       customerId,
       updates,
+      {stripeAccount: req.headers['stripe-account'] as string},
     );
 
     if (updatedCustomer) {
@@ -97,7 +100,7 @@ export const deleteCustomer = async (req: Request, res: Response) => {
   try {
     const stripeCrudService =
       StripeCustomerCrudService.retrieveServiceInstance();
-    const isDeleted = await stripeCrudService.deleteCustomer(customerId);
+    const isDeleted = await stripeCrudService.deleteCustomer(customerId, {stripeAccount: req.headers['stripe-account'] as string});
 
     if (isDeleted) {
       return res

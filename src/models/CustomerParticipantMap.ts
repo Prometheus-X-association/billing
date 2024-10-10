@@ -1,13 +1,13 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface ICustomerParticipantMap extends Document {
-  customerId: string;
-  participantId: string;
+  stripeCustomerId: string;
+  participant: string;
 }
 
 const CustomerParticipantMapSchema = new Schema<ICustomerParticipantMap>({
-  customerId: { type: String, required: true, unique: true },
-  participantId: { type: String, required: true },
+  stripeCustomerId: { type: String, required: true, unique: true },
+  participant: { type: String, required: true },
 });
 
 const CustomerParticipantMap = model<ICustomerParticipantMap>(

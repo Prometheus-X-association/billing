@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import {
-    getCustomerByCustomerId,
+    getCustomerByStripeCustomerId,
     getCustomerById,
-    getCustomerByParticipantId,
+    getCustomerByParticipant,
     getCustomers
 } from "../../controllers/billing.customer.controller";
+import { base64Checker } from '../middlewares/base64Checker';
 
 const router = Router();
 
@@ -53,17 +54,17 @@ router.get('/:id', getCustomerById);
 
 /**
  * @swagger
- * /api/customers/participant/{participantId}:
+ * /api/customers/participant/{participant}:
  *   get:
- *     summary: Retrieve a billing customer by participantId
- *     description: Retrieve a billing customer by participantId.
+ *     summary: Retrieve a billing customer by participant
+ *     description: Retrieve a billing customer by participant.
  *     tags:
  *       - Customers
  *     parameters:
- *       - name: participantId
+ *       - name: participant
  *         in: path
  *         required: true
- *         description: The participantId of the billing customer.
+ *         description: The participant of the billing customer.
  *         schema:
  *           type: string
  *     responses:
@@ -74,21 +75,21 @@ router.get('/:id', getCustomerById);
  *       500:
  *         description: Error retrieving customers.
  */
-router.get('/participant/:participantId', getCustomerByParticipantId);
+router.get('/participant/:participant', base64Checker('participant'), getCustomerByParticipant);
 
 /**
  * @swagger
- * /api/customers/customer/{customerId}:
+ * /api/customers/customer/{stripeCustomerId}:
  *   get:
- *     summary: Retrieve a billing customer by customerId
- *     description: Retrieve a billing customer by customerId.
+ *     summary: Retrieve a billing customer by stripeCustomerId
+ *     description: Retrieve a billing customer by stripeCustomerId.
  *     tags:
  *       - Customers
  *     parameters:
- *       - name: participantId
+ *       - name: stripeCustomerId
  *         in: path
  *         required: true
- *         description: The customerId of the billing customer.
+ *         description: The stripeCustomerId of the billing customer.
  *         schema:
  *           type: string
  *     responses:
@@ -99,7 +100,7 @@ router.get('/participant/:participantId', getCustomerByParticipantId);
  *       500:
  *         description: Error retrieving customers.
  */
-router.get('/participant/:customerId', getCustomerByCustomerId);
+router.get('/stripe/:stripeCustomerId', getCustomerByStripeCustomerId);
 
 
 export default router;
