@@ -67,12 +67,19 @@ This header is mandatory for all routes that interact with connected accounts, s
 
 ## Getting Started
 
-To run the project:
+To run the project for production:
 
 1. Install dependencies: `npm install` or `pnpm install`
-2. Set up environment variables (including Stripe API keys, webhook secret and mongoURI)
+2. Set up environment variables (including Stripe API keys, webhook secret and mongoURI) in the .env file
 3. build the project: `npm build`
 4. Start the server: `npm start`
+
+Using docker:
+
+1. Set up environment variables (including Stripe API keys, webhook secret and mongoURI) in the .env file by copying the .env.sample file and renaming it to .env
+2. (optional) create external docker network: `docker network create ptx`
+3. build using docker compose: `docker compose build`
+4. run using docker compose: `docker compose up -d`
 
 For testing:
 

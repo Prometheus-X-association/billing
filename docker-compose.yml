@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  billing-manager:
+    container_name: "billing-manager"
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    image: billing-manager:latest
+    ports:
+      - "${PORT}:${PORT}"
+    links:
+      - mongodb
+    env_file:
+      - .env
+    networks:
+      - billing-manager
+      - ptx
+
+  mongodb:
+    container_name: "billing-manager-mongodb"
+    build:
+      context: .
+      dockerfile: docker/mongodb/Dockerfile
+    #    Uncomment to connect mongodb container to mongo compass or another service
+    #    ports:
+    #      - "27017:27017"
+    volumes:
+      - billing_data:/data/db
+    networks:
+      - billing-manager
+
+networks:
+  billing-manager:
+    name: billing-manager
+    driver: bridge
+  ptx:
+    name: ptx
+    external: true
+
+volumes:
+  billing_data:

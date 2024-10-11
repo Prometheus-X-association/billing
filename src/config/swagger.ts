@@ -18,7 +18,7 @@ const swaggerDefinition: OAS3Definition = {
 
   const swaggerOptions: OAS3Options = {
     swaggerDefinition,
-    apis: [path.join(__dirname, '../routes/private/*.routes.ts')],
+    apis: ['./src/routes/private/*.routes.ts'],
   };
 
   const swaggerDocs = swaggerJsDoc(swaggerOptions);
