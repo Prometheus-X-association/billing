@@ -1,0 +1,9 @@
+node_modules
+dist
+.env*
+!.env*sample
+logs
+src/logs
+mochawesome-report
+docs/swagger.json
+.idea
