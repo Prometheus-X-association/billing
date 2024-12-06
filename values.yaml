@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  repository: billing
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 8080
+
+env:
+  NODE_ENV: development
+  PORT: "8080"
+  MONGO_URI: "mongodb://billing-manager-mongodb:27017/billing"
+  STRIPE_SECRET_KEY: ""
+  STRIPE_SECRET_WEBHOOK: ""
