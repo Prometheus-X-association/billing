@@ -7,3 +7,6 @@ src/logs
 mochawesome-report
 docs/swagger.json
 .idea
+terraform/.terraform
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars

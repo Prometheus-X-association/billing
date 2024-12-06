@@ -11,7 +11,6 @@ let testConnectedAccountId: string;
 const id: string = 'acct_50726F6D6574686575732058';
 const email: string = 'test_connected_account@example.com';
 const type: string = 'express';
-// todo: connect to real stripe 'connected account'
 describe('Stripe Connected Account CRUD API', function () {
   before(async function () {
     const app = await getApp();

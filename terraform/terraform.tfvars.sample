@@ -1,0 +1,2 @@
+port = 8080
+kubeconfig_path = "~/.minikube/config/config.json"
